@@ -61,7 +61,7 @@ function LogoutButton() {
 function sidebar() {
   return (
     <>
-        <div className="flex min-h-screen">
+        
             <div id="sidebar" className="w-64 bg-[#3E3269] text-white p-4 flex flex-col h-screen fixed lg:block">
                 <a href="dashboard" className="text-lg font-semibold mb-4">แผนการเรียน</a>
                 <hr className="border-gray-500 my-4" />
@@ -98,7 +98,6 @@ function sidebar() {
                 </button>
                 </div>
             </div>
-        </div>
         <button onClick={toggleSidebar} className="lg:hidden fixed top-4 left-4 bg-blue-500 text-white p-2 rounded-md">☰</button>  
     </>
   )
