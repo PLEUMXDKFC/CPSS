@@ -1,4 +1,4 @@
-import Test from './Page/test'
+import Createstudyplan from './Page/Createstudyplan'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 function App() {
@@ -6,7 +6,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Test />} />
+        <Route path="/" element={<Createstudyplan />} />
       </Routes>
     </Router>
   )
