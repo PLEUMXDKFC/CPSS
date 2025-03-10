@@ -4,6 +4,7 @@ import Sidebar from '../components/sidebar'
 function Createstudyplan() {
   return (
     <Sidebar />
+    
   )
 }
 
