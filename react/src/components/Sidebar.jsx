@@ -79,9 +79,9 @@ function sidebar() {
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('plan.index') }}" className="flex items-center p-2 rounded-md hover:bg-white/20 transition {{ request()->is('make-plan') ? 'bg-white/20' : '' }}">
+                    <Link href="{{ route('plan.index') }}" className="flex items-center p-2 rounded-md hover:bg-white/20 transition {{ request()->is('make-plan') ? 'bg-white/20' : '' }}">
                         <LucideIcons.Calendar className="w-5 h-5 mr-2"></LucideIcons.Calendar>สร้างแผนการเรียน
-                    </a>
+                    </Link>
                 </li>
                 <li>
                     <a href="{{ route('view-group') }}" className="flex items-center p-2 rounded-md hover:bg-white/20 transition {{ request()->is('view-group') ? 'bg-white/20' : '' }}">
