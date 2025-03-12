@@ -5,8 +5,6 @@ function CourseTable({ courses, totalCredits }) {
   return (
     <div className='ml-5 mt-5'>
       <div className='ml-5 mt-5'>
-        <span className='text-lg ml-5'>1.1 กลุ่มสมรรถนะภาษาและการสื่อสาร</span>
-        <a href="#" className='ml-5 text-blue-500 text-lg'>เพิ่มข้อมูลรายวิชา</a>
       </div>
       <table className='ml-9 text-lg'>
         {/* เนื้อหาตาราง */}

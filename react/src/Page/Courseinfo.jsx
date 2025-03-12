@@ -1,18 +1,19 @@
-// pages/Createstudyplan.js
-import React, { useState } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom'; // นำเข้า Link
 import Sidebar from '../components/sidebar';
-import CourseTable from '../components/Tableinfo'; // นำเข้าคอมโพเนนต์ตาราง
+import CourseTable from '../components/Tableinfo';
 
-function Createstudyplan() {
-  const [courses, setCourses] = useState([
-    { id: '20000-1596', name: 'ภาษาอังกฤษ', credits: '0-2-1' },
-    // เพิ่มข้อมูลรายวิชาอื่น ๆ ที่นี่
-  ]);
+function Courseinfo() {
+  // ข้อมูลตัวอย่าง
+  const courses = [
+    { id: 1, name: 'วิชาภาษาไทย', credits: '3-0-3' },
+    { id: 2, name: 'วิชาคณิตศาสตร์', credits: '2-2-3' },
+  ];
 
   // คำนวณผลรวมของหน่วยกิต
   const totalCredits = courses.reduce((sum, course) => {
-    const [lecture, lab, self] = course.credits.split('-').map(Number);
-    return sum + lecture + lab + self;
+    const [theory, practice, credit] = course.credits.split('-').map(Number);
+    return sum + credit;
   }, 0);
 
   return (
@@ -20,7 +21,7 @@ function Createstudyplan() {
       <Sidebar />
       <div className='ml-65 mt-6'>
         {/* ปุ่มย้อนกลับ */}
-        <a href="dashboard" className='bg-red-500 text-white rounded-lg py-3 px-6 ml-5 hover:bg-red-600 transition'>ย้อนกลับ</a>
+        <Link to="/dashboard" className='bg-red-500 text-white rounded-lg py-3 px-6 ml-5 hover:bg-red-600 transition'>ย้อนกลับ</Link>
 
         {/* หัวข้อหลัก */}
         <h1 className='text-center font-bold text-lg'>ข้อมูลรายวิชา</h1>
@@ -50,13 +51,28 @@ function Createstudyplan() {
           </div>
         </div>
 
+        {/* หมวดวิชาสมรรถนะแกนกลาง */}
         <span className='text-lg ml-5'>1.หมวดวิชาสมรรถนะแกนกลาง</span>
-        
-        {/* ใช้คอมโพเนนต์ตาราง */}
+        <div className='ml-10'>
+          <br />
+          <span className='text-lg ml-5'>1.1 กลุ่มสมรรถนะภาษาและการสื่อสาร</span>
+          <Link
+            to={{
+              pathname: '/courseadd',
+              state: { category: '1.1 กลุ่มสมรรถนะภาษาและการสื่อสาร' }, // ส่งหัวข้อผ่าน state
+            }}
+            className='ml-5 text-blue-500 text-lg'
+          >
+            เพิ่มข้อมูลรายวิชา
+          </Link>
+        </div>
         <CourseTable courses={courses} totalCredits={totalCredits} />
+
+        {/* ส่วนอื่น ๆ ของหน้า */}
+        {/* ... */}
       </div>
     </div>
   );
 }
 
-export default Createstudyplan;
+export default Courseinfo;
