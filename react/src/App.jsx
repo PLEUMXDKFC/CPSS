@@ -1,4 +1,4 @@
-import Createstudyplan from './Page/Createstudyplan'
+import Createstudyplan from './Page/mohou'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 function App() {
