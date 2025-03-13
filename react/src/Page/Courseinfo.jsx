@@ -6,8 +6,8 @@ import CourseTable from '../components/Tableinfo';
 function Courseinfo() {
   // ข้อมูลตัวอย่าง
   const courses = [
-    { id: 1, name: 'วิชาภาษาไทย', credits: '3-0-3' },
-    { id: 2, name: 'วิชาคณิตศาสตร์', credits: '2-2-3' },
+    { id: "20000-1596", name: 'วิชาภาษาไทย', credits: '3-0-3' },
+    { id: "20000-1485", name: 'วิชาคณิตศาสตร์', credits: '2-2-3' },
   ];
 
   // คำนวณผลรวมของหน่วยกิต
@@ -57,10 +57,7 @@ function Courseinfo() {
           <br />
           <span className='text-lg ml-5'>1.1 กลุ่มสมรรถนะภาษาและการสื่อสาร</span>
           <Link
-            to={{
-              pathname: '/courseadd',
-              state: { category: '1.1 กลุ่มสมรรถนะภาษาและการสื่อสาร' }, // ส่งหัวข้อผ่าน state
-            }}
+            to={`/courseadd?category=${encodeURIComponent('กลุ่มสมรรถนะภาษาและการสื่อสาร')}`} // ส่งหัวข้อผ่าน URL parameters
             className='ml-5 text-blue-500 text-lg'
           >
             เพิ่มข้อมูลรายวิชา
