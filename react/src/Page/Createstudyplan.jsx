@@ -118,12 +118,16 @@ function Createstudyplan() {
             cancelButtonText: 'ยกเลิก'
         }).then(async (result) => {
             if (result.isConfirmed) {
+                console.log(planId);
                 try {
                     // เรียก API delete
-                    const response = await axios.delete(`${API_BASE_URL}/server/api/DELETE/Deletestudyplan.php`, {
-                        data: { planid: planId }
+                    const response = await axios.post(`${API_BASE_URL}/server/api/DELETE/Deletestudyplan.php`, {
+                        planid: planId
                     });
 
+
+
+                    console.log(response.data)
                     if (response.data.status === "success") {
                         Swal.fire({
                             icon: 'success',
@@ -247,6 +251,7 @@ function Createstudyplan() {
                                 <option value="" disabled>เลือกหลักสูตร</option>
                                 <option value="หลักสูตรประกาศณียบัตรวิชาชีพ">หลักสูตรประกาศณียบัตรวิชาชีพ</option>
                                 <option value="หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง">หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง</option>
+                                <option value="หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง ม.6">หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง ม.6</option>
                             </select>
                         </div>
 
@@ -350,6 +355,7 @@ function Createstudyplan() {
                                             >
                                                 <option value="หลักสูตรประกาศณียบัตรวิชาชีพ">หลักสูตรประกาศณียบัตรวิชาชีพ</option>
                                                 <option value="หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง">หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง</option>
+                                                <option value="หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง ม.6">หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง ม.6</option>
                                             </select>
                                         ) : (
                                             plan.course

@@ -68,7 +68,7 @@ function sidebar() {
 
             <ul className="flex flex-col space-y-2 flex-grow">
                 <li>
-                    <Link to="/" className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${location.pathname === '/' ? 'bg-white/20' : ''}`}>
+                    <Link to={"/"} className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${location.pathname === '/' ? 'bg-white/20' : ''}`}>
                         <LucideIcons.Book className="w-5 h-5 mr-2" />
                         ข้อมูลรายวิชา
                     </Link>
@@ -84,9 +84,9 @@ function sidebar() {
                     </Link>
                 </li>
                 <li>
-                    <a href="{{ route('view-group') }}" className="flex items-center p-2 rounded-md hover:bg-white/20 transition {{ request()->is('view-group') ? 'bg-white/20' : '' }}">
+                  <Link to={"/Intogroupinfo"} className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${location.pathname === '/Intogroupinfo' || location.pathname.startsWith('/Groupinfo/') ? 'bg-white/20' : '' }`}>
                         <LucideIcons.User className="w-5 h-5 mr-2"></LucideIcons.User>ข้อมูลกลุ่มการเรียน
-                    </a>
+                    </Link>
                 </li>
             </ul>
 
