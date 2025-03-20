@@ -1,6 +1,10 @@
 <?php
 require("../conn.php");
 header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Origin: http://localhost:5173"); // อนุญาตเฉพาะโดเมนนี้
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS"); // อนุญาต method ที่ใช้
+header("Access-Control-Allow-Headers: Content-Type, Authorization"); // อนุญาต headers ที่ใช้
+header("Content-Type: application/json; charset=UTF-8");
 
 try {
     // รับข้อมูลจาก client ในรูปแบบ JSON
@@ -13,9 +17,9 @@ try {
     }
 
     // ตรวจสอบว่าข้อมูลที่จำเป็นถูกส่งมาครบถ้วนหรือไม่
-    if (isset($data['course_code'], $data['course_name'], $data['theory'], $data['comply'], $data['credit'], $data['subject_category'])) {
+    if (isset($data['course_code'], $data['course_name'], $data['theory'], $data['comply'], $data['credit'], $data['subject_category'], $data['planid'], $data['subject_groups'])) {
         // เตรียมคำสั่ง SQL สำหรับเพิ่มข้อมูล
-        $stmt = $conn->prepare("INSERT INTO subject (course_code, course_name, theory, comply, credit, subject_category) VALUES (:course_code, :course_name, :theory, :comply, :credit, :subject_category)");
+        $stmt = $conn->prepare("INSERT INTO subject (course_code, course_name, theory, comply, credit, subject_category, planid, subject_groups) VALUES (:course_code, :course_name, :theory, :comply, :credit, :subject_category, :planid, :subject_groups)");
 
         // ผูกค่าตัวแปรกับ placeholder
         $stmt->bindParam(":course_code", $data['course_code']);
@@ -24,6 +28,8 @@ try {
         $stmt->bindParam(":comply", $data['comply']);
         $stmt->bindParam(":credit", $data['credit']);
         $stmt->bindParam(":subject_category", $data['subject_category']);
+        $stmt->bindParam(":subject_groups", $data['subject_groups']);
+        $stmt->bindParam(":planid", $data['planid']);
 
         // ดำเนินการเพิ่มข้อมูล
         if ($stmt->execute()) {

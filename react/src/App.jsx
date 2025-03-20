@@ -10,7 +10,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Createstudyplan />} />
-        <Route path="/Courseinfo" element={<Courseinfo />} /> {/* เพิ่ม Route สำหรับ Courseinfo */}
+        <Route path="/Courseinfo/:planid" element={<Courseinfo />} /> {/* เพิ่ม Route สำหรับ Courseinfo */}
         <Route path="/Courseadd" element={<Courseadd />} /> {/* เพิ่ม Route สำหรับ Courseinfo */}
       </Routes>
     </Router>

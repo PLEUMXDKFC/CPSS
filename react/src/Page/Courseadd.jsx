@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
 import Sidebar from '../components/sidebar';
 import Addinfo from '../components/Addinfo';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { LucideEdit, LucideEye, LucideTrash, LucideCheck, LucideX } from 'lucide-react';
 
 function Courseadd() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
+  const planid = searchParams.get('planid');
   const category = searchParams.get('category');
+  const subcategory = searchParams.get('subcategory');
+  const addinforef = useRef(null);
+
+
+  const displayText = category && subcategory ? subcategory : category || '';
 
   const [course_code, setcourse_code] = useState('');
   const [course_name, setcourse_name] = useState('');
@@ -20,25 +25,30 @@ function Courseadd() {
 
   const [courses, setCourses] = useState([]);
 
-  const totalCredits = courses.reduce((sum, course) => {
-    const [theory, comply, credit] = course.credits.split('-').map(Number);
-    return sum + credit;
-  }, 0);
 
+
+  // ดึงข้อมูลจาก API เมื่อหน้าโหลด
   const handleAddCourse = async () => {
     const newCourse = {
-      id: course_code,
-      name: course_name,
-      credits: `${theory}-${comply}-${credit}`,
-      subject_category: category, // เพิ่ม subject_category ที่ได้จาก URL
+      course_code: course_code,
+      course_name: course_name,
+      theory: theory,
+      comply: comply,
+      credit: credit,
+      subject_category: category,
+      subject_groups: subcategory,
+      planid: planid,
     };
-
+  
     try {
-      const response = await axios.post(`${API_BASE_URL}/server\api/POST/Courseadd.php`, newCourse);
-      if (response.status === 201) {
+      const response = await axios.post(`${API_BASE_URL}/server/api/POST/Courseadd.php`, newCourse);
+      console.log('คำตอบจาก API:', response); // ตรวจสอบคำตอบจาก API
+  
+      // ตรวจสอบสถานะและข้อมูลที่ส่งกลับมา
+      if (response.status === 201 || response.status === 200) {
         setCourses([...courses, newCourse]);
-        setcoursescode('');
-        setcoursesname('');
+        setcourse_code('');
+        setcourse_name('');
         settheory('');
         setcomply('');
         setcredit('');
@@ -46,6 +56,15 @@ function Courseadd() {
           icon: 'success',
           title: 'บันทึกสำเร็จ',
           text: 'รายวิชาถูกเพิ่มเรียบร้อยแล้ว',
+      }).then(() => {
+        addinforef.current.fetchFilteredCourses();
+      });
+
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: response.data.message || 'ไม่สามารถเพิ่มรายวิชาได้',
         });
       }
     } catch (error) {
@@ -53,11 +72,11 @@ function Courseadd() {
       Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด',
-        text: 'ไม่สามารถเพิ่มรายวิชาได้',
+        text: error.response?.data?.message || 'ไม่สามารถเพิ่มรายวิชาได้',
       });
     }
   };
-
+  
   return (
     <div>
       <Sidebar />
@@ -65,12 +84,12 @@ function Courseadd() {
       <div className='ml-65 mt-6'>
         <a href="dashboard" className='bg-red-500 text-white rounded-lg py-3 px-6 ml-5 hover:bg-red-600 transition'>ย้อนกลับ</a>
 
-        <h1 className='text-center font-bold text-lg'>เพิ่มข้อมูลรายวิชา {decodeURIComponent(category)}</h1>
+        <h1 className='text-center font-bold text-lg'>เพิ่มข้อมูลรายวิชา {decodeURIComponent(displayText)}</h1>
 
         <div className='ml-10 mt-10'>
-          <div className='flex space-x-4'>
-            <div className='flex-1'>
-              <label htmlFor="coursescode" className=' font-medium'>รหัสวิชา:</label>
+          <div className='flex flex-col space-y-4'>
+            <div className='flex items-center space-x-4 '>
+              <label htmlFor="coursescode" className='font-medium'>รหัสวิชา:</label>
               <input
                 type="text"
                 id="coursescode"
@@ -94,7 +113,7 @@ function Courseadd() {
                 id="theory"
                 value={theory}
                 onChange={(e) => settheory(e.target.value)}
-                className='border-2 border-gray-700 rounded-lg p-2 w-13'
+                className='border-2 border-gray-700 rounded-lg p-2 flex-1'
                 min="0"
                 max="9"
               />
@@ -105,7 +124,7 @@ function Courseadd() {
                 id="comply"
                 value={comply}
                 onChange={(e) => setcomply(e.target.value)}
-                className='border-2 border-gray-700 rounded-lg p-2 w-13 ml-1'
+                className='border-2 border-gray-700 rounded-lg p-2 flex-1 ml-1'
                 min="0"
                 max="9"
               />
@@ -116,7 +135,7 @@ function Courseadd() {
                 id="credit"
                 value={credit}
                 onChange={(e) => setcredit(e.target.value)}
-                className='border-2 border-gray-700 rounded-lg p-2 w-13 ml-1'
+                className='border-2 border-gray-700 rounded-lg p-2 flex-1 ml-1'
                 min="0"
                 max="9"
               />
@@ -124,15 +143,16 @@ function Courseadd() {
           </div>
 
           <div className='flex justify-center mt-5'>
-            <button 
-              onClick={handleAddCourse} 
-              className='bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition'>
+            <button
+              onClick={handleAddCourse}
+              className='bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition'
+            >
               บันทึก
             </button>
           </div>
         </div>
 
-        <Addinfo courses={courses} totalCredits={totalCredits} />
+        <Addinfo subject_groups={subcategory} subject_category={category} planid={planid} ref={addinforef} />
       </div>
     </div>
   );
