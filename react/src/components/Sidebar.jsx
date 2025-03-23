@@ -74,9 +74,9 @@ function sidebar() {
                     </Link>
                 </li>
                 <li>
-                    <a href="{{ route('curriculum-structure.index') }}" className="flex items-center p-2 rounded-md hover:bg-white/20 transition {{ request()->is('curriculum-structure') ? 'bg-white/20' : '' }}">
+                    <Link to={"/Intomohou"} className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${location.pathname === '/Intomohou' || location.pathname.startsWith('/mohou') ? 'bg-white/20' : '' }`}>
                         <LucideIcons.LayoutDashboard className="w-5 h-5 mr-2"></LucideIcons.LayoutDashboard>ดูโครงสร้างแผนการเรียน
-                    </a>
+                    </Link>
                 </li>
                 <li>
                     <Link href="{{ route('plan.index') }}" className="flex items-center p-2 rounded-md hover:bg-white/20 transition {{ request()->is('make-plan') ? 'bg-white/20' : '' }}">

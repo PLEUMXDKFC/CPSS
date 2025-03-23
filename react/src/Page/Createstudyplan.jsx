@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import Sidebar from '../components/sidebar'
+import Sidebar from '../components/Sidebar';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { LucideEdit, LucideEye, LucideTrash, LucideCheck, LucideX } from 'lucide-react';
