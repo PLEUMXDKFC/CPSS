@@ -3,8 +3,10 @@ import Sidebar from '../components/Sidebar';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { LucideEdit, LucideEye, LucideTrash, LucideCheck, LucideX } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function Createstudyplan() {
+    const navigate=useNavigate();
     const [course, setCourse] = useState('');
     const [year, setYear] = useState('');
     const [student_id, setStudent_id] = useState('');
@@ -228,9 +230,9 @@ function Createstudyplan() {
     // Return the UI
     return (
         <>
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen ">
         <Sidebar />
-            <div className="ml-65 container mx-auto p-4">
+            <div className="ml-65 container mx-auto p-4 ">
                 <h2 className="text-center mb-4 text-2xl font-bold">สร้างหลักสูตร</h2>
 
                 <form onSubmit={handleSubmit}>
@@ -257,7 +259,7 @@ function Createstudyplan() {
                                 id="year"
                                 value={year}
                                 onChange={(e) => setYear(e.target.value)}
-                                className="border-2 border-gray-700 rounded-lg w-full p-2"
+                                className="border-2 border-gray-700 rounded-lg w-full p-2 flex-1"
                                 placeholder="กรอกพุทธศักราช"
                                 min="1000"
                                 max="9999"
@@ -426,9 +428,9 @@ function Createstudyplan() {
                                             </div>
                                         ) : (
                                             <div className="flex space-x-1 justify-center">
-                                                <a href={`/subjects/${plan.planid}`} className="bg-yellow-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-yellow-600 cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2">
+                                                <button onClick={()=>navigate(`/courseinfo/${plan.planid}`)} className="bg-yellow-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-yellow-600 cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2">
                                                     <LucideEye size={16} /> ดูข้อมูลรายวิชา
-                                                </a>
+                                                </button>
                                         
                                                 <button 
                                                     type="button"
