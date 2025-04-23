@@ -1,117 +1,134 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowUp } from "lucide-react"; // ใช้ไอคอนที่เหมาะสม
-import { useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, ArrowUp } from "lucide-react";
 import axios from "axios";
 import Sidebar from "../components/sidebar";
 import CourseTable from "../components/Tableinfo";
+import Swal from "sweetalert2";
 
 function Courseinfo() {
   const { planid } = useParams();
   const navigate = useNavigate();
   const [course, setCourse] = useState("");
-  const [prevCourse, setPrevCourse] = useState(""); // เก็บข้อมูลหลักสูตรของปีที่แล้ว
-  const [showConfirm, setShowConfirm] = useState(false); // กำหนดการแสดงหน้าต่างยืนยัน
-  const [isProcessing, setIsProcessing] = useState(false); // ใช้เพื่อแสดงสถานะกำลังประมวลผล
+  const [year, setYear] = useState(null);
+  const [previousPlanid, setPreviousPlanid] = useState(null);
+  const [previousCourse, setPreviousCourse] = useState(null); // เพิ่มตัวแปรเก็บหลักสูตรของปีก่อนหน้า
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(Date.now());
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  // คำนวณ planid ของปีก่อนหน้า
-  const previousPlanid = parseInt(planid) - 1;
-
-  useEffect(() => {
-    axios
-      .get(`${API_BASE_URL}/server/api/GET/Getstudyplan.php?planid=${planid}`)
+  // 📌 ฟังก์ชันสำหรับดึงข้อมูลหลักสูตร
+  const fetchCourseInfo = () => {
+    axios.get(`${API_BASE_URL}/server/api/GET/Getstudyplan.php?planid=${planid}`)
       .then((response) => {
         const foundPlan = response.data.find((plan) => plan.planid === parseInt(planid));
-        setCourse(foundPlan?.course?.trim() || "ไม่พบข้อมูลหลักสูตร");
+        if (foundPlan) {
+          setYear(foundPlan.year);
+          setCourse(foundPlan.course.trim());
+          setRefreshKey(Date.now()); // รีเฟรช key
+        }
       })
       .catch((error) => {
         console.error("Error fetching course:", error);
         setCourse("เกิดข้อผิดพลาดในการโหลดข้อมูล");
       });
+  };
 
-    // ดึงข้อมูลหลักสูตรของปีที่แล้ว
-    axios
-      .get(`${API_BASE_URL}/server/api/GET/Getstudyplan.php?planid=${previousPlanid}`)
+  useEffect(() => {
+    fetchCourseInfo();
+  }, [planid]);
+
+
+// ดึงข้อมูลแผนการเรียนของปีที่แล้ว
+useEffect(() => {
+  if (year) {
+    const previousYear = parseInt(year) - 1;
+    axios.get(`${API_BASE_URL}/server/api/GET/Getstudyplan.php?year=${previousYear}`)
       .then((response) => {
-        const foundPrevPlan = response.data.find((plan) => plan.planid === previousPlanid);
-        setPrevCourse(foundPrevPlan?.course?.trim() || "ไม่มีข้อมูลปีที่แล้ว");
+        const foundPrevPlan = response.data.find((plan) => Number(plan.year) === previousYear);
+        if (foundPrevPlan) {
+          setPreviousPlanid(foundPrevPlan.planid);
+          setPreviousCourse(foundPrevPlan.course.trim()); // บันทึกหลักสูตรของปีที่แล้ว
+        } else {
+          setPreviousPlanid(null);
+          setPreviousCourse(null);
+        }
       })
       .catch((error) => {
-        console.error("Error fetching previous course:", error);
-        setPrevCourse("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+        console.error("Error fetching previous year plan:", error);
       });
-  }, [planid]);
+  }
+}, [year]);
 
   const handleBack = () => {
     navigate(-1);
   };
 
-  // ฟังก์ชันสำหรับการเพิ่มข้อมูลจากปีที่แล้ว
-  const handleAddPreviousCourse = () => {
+  const handleAddPreviousCourse = async () => {
+    if (!previousPlanid) {
+      Swal.fire("แจ้งเตือน", "ไม่พบข้อมูลปีที่แล้ว", "warning");
+      return;
+    }
+  
     setIsProcessing(true);
-
-    // ส่งข้อมูลการเพิ่มไปยัง API
-    axios
-      .post(`${API_BASE_URL}/server/api/POST/CopyPreviousCourse.php`, {
-        currentPlanid: planid,
-        previousPlanid: previousPlanid,
-      })
+  
+    axios.post(`${API_BASE_URL}/server/api/POST/CopyPreviousCourse.php`, {
+      currentPlanid: planid
+    })
       .then((response) => {
         setIsProcessing(false);
         if (response.data.success) {
-          alert("ข้อมูลจากปีก่อนหน้าได้ถูกเพิ่มเรียบร้อยแล้ว");
+          Swal.fire("สำเร็จ", "ข้อมูลจากปีก่อนหน้าได้ถูกเพิ่มเรียบร้อยแล้ว", "success").then(() => {
+            fetchCourseInfo(); // รีเฟรชข้อมูลใหม่
+          });
+          setShowConfirm(false);
         } else {
-          alert("เกิดข้อผิดพลาดในการเพิ่มข้อมูล");
+          Swal.fire("ผิดพลาด", "เกิดข้อผิดพลาดในการเพิ่มข้อมูล", "error");
         }
       })
       .catch((error) => {
         setIsProcessing(false);
         console.error("Error adding previous course:", error);
-        alert("เกิดข้อผิดพลาดในการเพิ่มข้อมูล");
+        Swal.fire("ผิดพลาด", "เกิดข้อผิดพลาดในการเพิ่มข้อมูล", "error");
       });
   };
 
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className='ml-65 container mx-auto p-4'>
-
+      <div className="ml-65 container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-          <button onClick={handleBack} className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
-            <ArrowLeft size={20} />
-            <span className="font-medium">ย้อนกลับ</span>
+      <button onClick={handleBack} className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
+        <ArrowLeft size={20} />
+        <span className="font-medium">ย้อนกลับ</span>
+      </button>
+      {previousPlanid && course && previousCourse &&
+        (course.toLowerCase().includes(previousCourse.toLowerCase()) ||
+        previousCourse.toLowerCase().includes(course.toLowerCase())) && (
+          <button
+            onClick={() => setShowConfirm(true)}
+            className="flex items-center gap-2 px-4 py-2 text-white bg-green-600 hover:bg-green-700 text-lg rounded-md"
+          >
+            <ArrowUp size={20} />
+            ใช้ข้อมูลจากปีที่แล้ว
           </button>
+      )}
+    </div>
 
-          {/* ปุ่มเพิ่มข้อมูลจากปีที่แล้ว */}
-          {previousPlanid > 0 && (
-            <button
-              onClick={() => setShowConfirm(true)}
-              className="flex items-center gap-2 px-4 py-2 text-white bg-green-600 hover:bg-green-700 text-lg rounded-md"
-            >
-              <ArrowUp size={20} />
-              ใช้ข้อมูลจากปีที่แล้ว
-            </button>
-          )}
-        </div>
 
-        {/* หน้าต่างยืนยัน */}
         {showConfirm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
               <h2 className="text-xl font-semibold mb-4">ยืนยันการเพิ่มข้อมูลจากปีที่แล้ว</h2>
-              <p className="mb-4">คุณต้องการใช้ข้อมูลจากหลักสูตรปีก่อนหน้า  ไปยังหลักสูตรปีปัจจุบันหรือไม่?</p>
+              <p className="mb-4">
+                คุณต้องการใช้ข้อมูลจากหลักสูตรปีก่อนหน้า {previousPlanid ? ` (${year - 1}) [${course}] ` : ""} ไปยังหลักสูตรปีปัจจุบันหรือไม่?
+              </p>
               <div className="flex justify-between">
-                <button
-                  onClick={handleAddPreviousCourse}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
-                >
+                <button onClick={handleAddPreviousCourse} className="px-4 py-2 bg-blue-600 text-white rounded-md">
                   ยืนยัน
                 </button>
-                <button
-                  onClick={() => setShowConfirm(false)}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-md"
-                >
+                <button onClick={() => setShowConfirm(false)} className="px-4 py-2 bg-gray-500 text-white rounded-md">
                   ยกเลิก
                 </button>
               </div>
@@ -136,7 +153,7 @@ function Courseinfo() {
             เพิ่มข้อมูลรายวิชา
           </Link>
         </div>
-        <CourseTable planid={planid} subject_groups={"1.1 กลุ่มสมรรถนะภาษาและการสื่อสาร"}  subject_category={"1.หมวดวิชาสมรรถนะแกนกลาง"}/>
+           <CourseTable  key={refreshKey + "_group1"}  planid={planid} subject_groups={"1.1 กลุ่มสมรรถนะภาษาและการสื่อสาร"} subject_category={"1.หมวดวิชาสมรรถนะแกนกลาง"} />
 
         <div className='ml-10'>
           <br />
@@ -148,7 +165,7 @@ function Courseinfo() {
             เพิ่มข้อมูลรายวิชา
           </Link>
         </div>
-        <CourseTable planid={planid} subject_groups={"1.2 กลุ่มสมรรถนะการคิดและการแก้ปัญหา"}  subject_category={"1.หมวดวิชาสมรรถนะแกนกลาง"}/>
+        <CourseTable key={refreshKey + "_group2"}  planid={planid} subject_groups={"1.2 กลุ่มสมรรถนะการคิดและการแก้ปัญหา"}  subject_category={"1.หมวดวิชาสมรรถนะแกนกลาง"}/>
 
         <div className='ml-10'>
           <br />
@@ -160,7 +177,7 @@ function Courseinfo() {
             เพิ่มข้อมูลรายวิชา
           </Link>
         </div>
-        <CourseTable planid={planid} subject_groups={"1.3 กลุ่มสมรรถนะสังคมและการดำรงชีวิต"}  subject_category={"1.หมวดวิชาสมรรถนะแกนกลาง"}/>
+        <CourseTable key={refreshKey + "_group3"} planid={planid} subject_groups={"1.3 กลุ่มสมรรถนะสังคมและการดำรงชีวิต"}  subject_category={"1.หมวดวิชาสมรรถนะแกนกลาง"}/>
          
         {course === "หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง (ม.6)" && (
         <div className="mt-5">
@@ -171,7 +188,7 @@ function Courseinfo() {
           >
             เพิ่มข้อมูลรายวิชา
           </Link>
-          <CourseTable planid={planid} subject_groups={""} subject_category={"รายวิชาปรับพื้นฐาน"} />
+          <CourseTable key={refreshKey + "_group4"} planid={planid} subject_groups={""} subject_category={"รายวิชาปรับพื้นฐาน"} />
         </div>
       )}
 
@@ -188,7 +205,7 @@ function Courseinfo() {
               เพิ่มข้อมูลรายวิชา
             </Link>
           </div>
-          <CourseTable planid={planid} subject_groups={"2.1 กลุ่มสมรรถนะวิชาชีพพื้นฐาน"}  subject_category={"2.หมวดวิชาสมรรถนะวิชาชีพ"}/>
+          <CourseTable key={refreshKey + "_group5"}planid={planid} subject_groups={"2.1 กลุ่มสมรรถนะวิชาชีพพื้นฐาน"}  subject_category={"2.หมวดวิชาสมรรถนะวิชาชีพ"}/>
 
           <div className='ml-10'>
             <br />
@@ -200,7 +217,7 @@ function Courseinfo() {
               เพิ่มข้อมูลรายวิชา
             </Link>
           </div>
-          <CourseTable planid={planid} subject_groups={"2.2 กลุ่มสมรรถนะวิชาชีพเฉพาะ"}  subject_category={"2.หมวดวิชาสมรรถนะวิชาชีพ"}/>
+          <CourseTable key={refreshKey + "_group6"} planid={planid} subject_groups={"2.2 กลุ่มสมรรถนะวิชาชีพเฉพาะ"}  subject_category={"2.หมวดวิชาสมรรถนะวิชาชีพ"}/>
         </div>
 
         <div className='mt-5'>
@@ -211,7 +228,7 @@ function Courseinfo() {
           >
             เพิ่มข้อมูลรายวิชา
           </Link>
-          <CourseTable planid={planid} subject_groups={""} subject_category={"3.หมวดวิชาเลือกเสรี"} />
+          <CourseTable key={refreshKey + "_group7"} planid={planid} subject_groups={""} subject_category={"3.หมวดวิชาเลือกเสรี"} />
         </div>
 
         <div className='mt-5'>
@@ -222,7 +239,7 @@ function Courseinfo() {
           >
             เพิ่มข้อมูลรายวิชา
           </Link>
-          <CourseTable planid={planid} subject_groups={""} subject_category={"4.กิจกรรมเสริมหลักสูตร"} />
+          <CourseTable key={refreshKey + "_group8"} planid={planid} subject_groups={""} subject_category={"4.กิจกรรมเสริมหลักสูตร"} />
         </div>
 
       </div>

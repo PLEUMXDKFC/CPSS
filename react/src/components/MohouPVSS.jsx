@@ -84,7 +84,7 @@ function Mohou() {
     
                 const totalD = filteredData.reduce((total, subject) => {
                     if (
-                        subject.subject_category === "2.หมวดวิชาสมรรถนะแกนกลาง" &&
+                        subject.subject_category === "2.หมวดวิชาสมรรถนะวิชาชีพ" &&
                         subject.subject_groups === "2.1 กลุ่มสมรรถนะวิชาชีพพื้นฐาน"
                     ) {
                         return total + Number(subject.credit);
@@ -94,7 +94,7 @@ function Mohou() {
     
                 const totalE = filteredData.reduce((total, subject) => {
                     if (
-                        subject.subject_category === "2.หมวดวิชาสมรรถนะแกนกลาง" &&
+                        subject.subject_category === "2.หมวดวิชาสมรรถนะวิชาชีพ" &&
                         subject.subject_groups === "2.2 กลุ่มสมรรถนะวิชาชีพเฉพาะ"
                     ) {
                         return total + Number(subject.credit);

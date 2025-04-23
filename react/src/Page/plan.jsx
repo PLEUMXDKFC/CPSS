@@ -143,10 +143,10 @@ const Plans = () => {
                                                     <div className="flex flex-col items-center justify-between">
                                                         <div className="flex w-full justify-between">
                                                             <p className="text-lg font-semibold text-gray-700">
-                                                                ปีการศึกษา {plan.year} กลุ่ม {plan.group_name}
+                                                                ปีการศึกษา {plan.summer} กลุ่ม {plan.group_name}
                                                             </p>
                                                             <button
-                                                                onClick={() => handleAddSubject(plan.infoid, plan.planid, "summer", plan.year)}
+                                                                onClick={() => handleAddSubject(plan.infoid, plan.planid, "summer", plan.summer)}
                                                                 className="flex items-center gap-6 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                                                             >
                                                                 <span className="font-medium">+ เพิ่มรายวิชาภาคเรียนฤดูร้อน</span>

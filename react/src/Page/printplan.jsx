@@ -11,7 +11,75 @@ const Printplan = () => {
     const [selectedGroup, setSelectedGroup] = useState("");
     const selectedGroupData = groupData.find(group => group.infoid === selectedGroup);
     const subLevel = selectedGroupData ? selectedGroupData.sublevel : "ไม่ระบุ";
+    const [jobDescription1, setJobDescription1] = useState(""); // ภาคเรียนที่ 1
+    const [jobDescription2, setJobDescription2] = useState(""); // ภาคเรียนที่ 2
+    const [headOfDepartment, setHeadOfDepartment] = useState("");
+    const [headOfCurriculum, setHeadOfCurriculum] = useState("");
+    const [deputyDirector, setDeputyDirector] = useState("");
+    const [director, setDirector] = useState("");
+
+    const [savedJobDescription1, setSavedJobDescription1] = useState(""); // ค่าที่บันทึกสำหรับภาคเรียนที่ 1
+    const [savedJobDescription2, setSavedJobDescription2] = useState(""); // ค่าที่บันทึกสำหรับภาคเรียนที่ 2
+    const [savedHeadOfDepartment, setSavedHeadOfDepartment] = useState("");
+    const [savedHeadOfCurriculum, setSavedHeadOfCurriculum] = useState("");
+    const [savedDeputyDirector, setSavedDeputyDirector] = useState("");
+    const [savedDirector, setSavedDirector] = useState("");
     
+    const [isSaved, setIsSaved] = useState(false);
+
+    // เพิ่ม state สำหรับการแก้ไข
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingField, setEditingField] = useState(null);
+
+    const handleInputChange = (e, field) => {
+        switch(field) {
+            case "headOfDepartment":
+                setHeadOfDepartment(e.target.value);
+                break;
+            case "headOfCurriculum":
+                setHeadOfCurriculum(e.target.value);
+                break;
+            case "deputyDirector":
+                setDeputyDirector(e.target.value);
+                break;
+            case "director":
+                setDirector(e.target.value);
+                break;
+            case "jobDescription1":
+                setJobDescription1(e.target.value);
+                break;
+            case "jobDescription2":
+                setJobDescription2(e.target.value);
+                break;
+        }
+    };
+
+    // เพิ่มฟังก์ชันสำหรับจัดการการแก้ไข
+    const handleEdit = (fieldName, value) => {
+        setIsEditing(true);
+        setEditingField(fieldName);
+        switch(fieldName) {
+            case "jobDescription1":
+                setJobDescription1(value);
+                break;
+            case "jobDescription2":
+                setJobDescription2(value);
+                break;
+            case "headOfDepartment":
+                setHeadOfDepartment(value);
+                break;
+            case "headOfCurriculum":
+                setHeadOfCurriculum(value);
+                break;
+            case "deputyDirector":
+                setDeputyDirector(value);
+                break;
+            case "director":
+                setDirector(value);
+                break;
+        }
+    };
+
     // แยกข้อมูลออกเป็น "ระดับ" และ "ชั้นปี"
     let level = "ไม่ระบุ";
     let year = "";
@@ -87,6 +155,7 @@ const Printplan = () => {
                 console.error("Error fetching course information:", error);
             });
         }
+        setIsSaved(false); // กลับมาให้บันทึกใหม่
     }, [selectedGroup]);
     
     const handleBack = () => {
@@ -104,7 +173,104 @@ const Printplan = () => {
         window.location.reload(); // ✅ รีโหลดหน้าเพื่อคืนค่าเดิม
     };
 
+    // แก้ไขฟังก์ชัน handleSave
+    const handleSave = () => {
+        axios.post(`${API_BASE_URL}/server/api/POST/save_more_plan.php`, {
+            planid,
+            infoid: selectedGroup,
+            descriptionterm1: jobDescription1,
+            descriptionterm2: jobDescription2,
+            Headofdepartment: headOfDepartment,
+            HeadofCurriculum: headOfCurriculum,
+            DeputyDirector: deputyDirector,
+            Director: director
+        }).then(() => {
+            setSavedJobDescription1(jobDescription1);
+            setSavedJobDescription2(jobDescription2);
+            setSavedHeadOfDepartment(headOfDepartment);
+            setSavedHeadOfCurriculum(headOfCurriculum);
+            setSavedDeputyDirector(deputyDirector);
+            setSavedDirector(director);
+            setIsEditing(false);
+            setEditingField(null);
+            setIsSaved(true);
+        }).catch((error) => {
+            console.error("Error saving more_plan:", error);
+        });
+    };
+    
+    
+    useEffect(() => {
+        if (selectedGroup && planid) {
+            axios.get(`${API_BASE_URL}/server/api/GET/get_more_plan.php`, {
+                params: {
+                    planid,
+                    infoid: selectedGroup
+                }
+            })
+            .then((response) => {
+                const data = response.data;
+                if (data) {
+                    setSavedJobDescription1(data.descriptionterm1);
+                    setSavedJobDescription2(data.descriptionterm2);
+                    setSavedHeadOfDepartment(data.Headofdepartment);
+                    setSavedHeadOfCurriculum(data.HeadofCurriculum);
+                    setSavedDeputyDirector(data.DeputyDirector);
+                    setSavedDirector(data.Director);
+    
+                    // ตั้งค่าค่า input เผื่อใช้แก้ไขต่อ
+                    setJobDescription1(data.descriptionterm1);
+                    setJobDescription2(data.descriptionterm2);
+                    setHeadOfDepartment(data.Headofdepartment);
+                    setHeadOfCurriculum(data.HeadofCurriculum);
+                    setDeputyDirector(data.DeputyDirector);
+                    setDirector(data.Director);
+                } else {
+                    // เคลียร์ค่าเมื่อไม่มีข้อมูล
+                    setSavedJobDescription1("");
+                    setSavedJobDescription2("");
+                    setSavedHeadOfDepartment("");
+                    setSavedHeadOfCurriculum("");
+                    setSavedDeputyDirector("");
+                    setSavedDirector("");
+    
+                    setJobDescription1("");
+                    setJobDescription2("");
+                    setHeadOfDepartment("");
+                    setHeadOfCurriculum("");
+                    setDeputyDirector("");
+                    setDirector("");
+                }
+                if (response.data) {
+                    setSavedJobDescription1(response.data.descriptionterm1 || "");
+                    setSavedJobDescription2(response.data.descriptionterm2 || "");
+                    setSavedHeadOfDepartment(response.data.Headofdepartment || "");
+                    setSavedHeadOfCurriculum(response.data.HeadofCurriculum || "");
+                    setSavedDeputyDirector(response.data.DeputyDirector || "");
+                    setSavedDirector(response.data.Director || "");
+                    setIsSaved(true);
+                } else {
+                    setIsSaved(false);
+                }
+            })
+            .catch((error) => {
+                console.error("Error loading more_plan:", error);
+            });
+        }
+    }, [selectedGroup, planid]);
 
+    const isFormComplete = () => {
+        return (
+            jobDescription1.trim() !== "" &&
+            jobDescription2.trim() !== "" &&
+            headOfDepartment.trim() !== "" &&
+            headOfCurriculum.trim() !== "" &&
+            deputyDirector.trim() !== "" &&
+            director.trim() !== ""
+        );
+    };
+    
+    
     return (
         <div className="container mx-auto p-4">
             <button
@@ -138,14 +304,14 @@ const Printplan = () => {
                                     <td className="border border-gray-300 p-2">{item.year}</td>
                                     <td className="border border-gray-300 p-2">
                                     <input 
-                                        type="radio" 
+                                        type="checkbox" 
                                         name="groupSelection" 
                                         value={item.infoid} 
                                         checked={selectedGroup === item.infoid} 
                                         onChange={() => {
-                                            setSelectedGroup(item.infoid); // เปลี่ยนค่า selectedGroup
+                                            setSelectedGroup(item.infoid); // ✅ เมื่อเปลี่ยน group จะ trigger useEffect
                                         }} 
-                                        className="w-5 h-5 accent-blue-500 cursor-pointer" 
+                                        className="w-5 h-5 accent-blue-500 cursor-pointer " 
                                     />
                                     </td>
                                 </tr>
@@ -160,15 +326,65 @@ const Printplan = () => {
                     </tbody>
                 </table>
             </div>
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end mb-4 gap-2">
+    <button
+        onClick={handlePrint}
+        disabled={!isSaved || !isFormComplete() || isEditing}
+        className={`flex items-center gap-2 px-6 py-2 mt-4 text-white rounded-lg shadow-md transition-all duration-200
+            ${(isSaved && isFormComplete() && !isEditing) 
+                ? "bg-green-600 hover:bg-green-700 cursor-pointer" 
+                : "bg-gray-400 cursor-not-allowed"}`}
+    >
+        <Printer size={20} />
+        <span className="font-medium">
+            {!isSaved 
+                ? "กรุณาบันทึกข้อมูลก่อนพิมพ์" 
+                : !isFormComplete() 
+                    ? "กรุณากรอกข้อมูลให้ครบก่อนพิมพ์"
+                    : isEditing
+                        ? "กรุณาบันทึกการแก้ไขก่อนพิมพ์"
+                        : "พิมพ์"}
+        </span>
+    </button>
+
+    {/* ปุ่มอื่นๆ คงเดิม */}
+    {isSaved && !isEditing && (
+        <button
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-2 px-6 py-2 mt-4 text-white bg-yellow-600 hover:bg-yellow-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
+        >
+            <span className="font-medium">แก้ไขข้อมูล</span>
+        </button>
+    )}
+    
+    {isEditing && (
+        <>
             <button
-                onClick={handlePrint}
-                className="flex items-center gap-2 px-6 py-2 mt-4 text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
+                onClick={() => {
+                    setIsEditing(false);
+                    setEditingField(null);
+                    // Reset to saved values
+                    setJobDescription1(savedJobDescription1);
+                    setJobDescription2(savedJobDescription2);
+                    setHeadOfDepartment(savedHeadOfDepartment);
+                    setHeadOfCurriculum(savedHeadOfCurriculum);
+                    setDeputyDirector(savedDeputyDirector);
+                    setDirector(savedDirector);
+                }}
+                className="flex items-center gap-2 px-6 py-2 mt-4 text-white bg-gray-600 hover:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
             >
-                <Printer size={20} />
-                <span className="font-medium">พิมพ์</span>
+                <span className="font-medium">ยกเลิก</span>
             </button>
-        </div>
+            <button
+                onClick={handleSave}
+                className="flex items-center gap-2 px-6 py-2 mt-4 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
+            >
+                <span className="font-medium">บันทึกการแก้ไข</span>
+            </button>
+        </>
+    )}
+</div>
+
             <div ref={printRef} className="print-area">
             <table className="w-full border  text-sm mt-6">
                 <thead>
@@ -190,8 +406,42 @@ const Printplan = () => {
 
                     </tr>
                     <tr>
-                        <th colSpan={5} className="border-1  p-1 text-center">ลักษณะงาน:</th>
-                        <th colSpan={5} className="border-1  p-1 text-center">ลักษณะงาน:</th>
+                    <th colSpan={5} className="border-1 p-1 text-center w-auto whitespace-nowrap">
+                        ลักษณะงาน:{" "}
+                        {savedJobDescription1 ? (
+                            isEditing ? (
+                                <input
+                                    type="text"
+                                    value={jobDescription1}
+                                    onChange={(e) => setJobDescription1(e.target.value)}
+                                    className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
+                                    placeholder={savedJobDescription1}
+                                />
+                            ) : (
+                                <span className="hover:text-blue-600">{savedJobDescription1}</span>
+                            )
+                        ) : (
+                            <input
+                                type="text"
+                                value={jobDescription1}
+                                onChange={(e) => setJobDescription1(e.target.value)}
+                                className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
+                                placeholder="กรอกลักษณะงานภาคเรียนที่ 1"
+                            />
+                        )}
+                    </th>
+                    <th colSpan={5} className="border-1 p-1 text-center w-auto whitespace-nowrap">
+                        ลักษณะงาน:{" "}
+                        {savedJobDescription2 || (
+                            <input
+                                type="text"
+                                value={jobDescription2}
+                                onChange={(e) => setJobDescription2(e.target.value)}
+                                className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
+                                placeholder="กรอกลักษณะงานภาคเรียนที่ 2"
+                            />
+                        )}
+                    </th>
                     </tr>
                     <tr className="text-center">
                         <th className="border-1  p-1 w-24">รหัสวิชา</th>
@@ -329,35 +579,84 @@ const Printplan = () => {
     })()}
 </tbody>
             </table>
-           <div className="flex justify-between mt-2 px-10">
-    <div className="text-center">
-        <br /><br />
-        ....................................... <br />
-        <p>()</p>
-        <p>หัวหน้าแผนกวิชาเทคนิคคอมพิวเตอร์</p>
-    </div>
-    <div className="text-center">
-        <br /><br />
-        ....................................... <br />
-        <p>()</p>
-        <p>หัวหน้างานพัฒนาหลักสูตรการเรียนการสอน</p>
-    </div>
-    <div className="text-center">
-        <br /><br />
-        ....................................... <br />
-        <p>()</p>
-        <p>รองผู้อำนวยการฝ่ายวิชาการ</p>
-    </div>
-    <div className="text-center">
-        <br /><br />
-        ....................................... <br />
-        <p>()</p>
-        <p>ผู้อำนวยการวิทยาลัยเทคนิคแพร่</p>
-    </div>
-</div>
-</div>
-
+            <div className="flex justify-between mt-2 px-10">
+    {[
+        {
+            title: "หัวหน้าแผนกวิชาเทคนิคคอมพิวเตอร์",
+            savedValue: savedHeadOfDepartment,
+            currentValue: headOfDepartment,
+            field: "headOfDepartment"
+        },
+        {
+            title: "หัวหน้างานพัฒนาหลักสูตรการเรียนการสอน",
+            savedValue: savedHeadOfCurriculum,
+            currentValue: headOfCurriculum,
+            field: "headOfCurriculum"
+        },
+        {
+            title: "รองผู้อำนวยการฝ่ายวิชาการ",
+            savedValue: savedDeputyDirector,
+            currentValue: deputyDirector,
+            field: "deputyDirector"
+        },
+        {
+            title: "ผู้อำนวยการวิทยาลัยเทคนิคแพร่",
+            savedValue: savedDirector,
+            currentValue: director,
+            field: "director"
+        }
+    ].map((item, index) => (
+        <div key={index} className="text-center">
+            <br /><br />
+            {item.savedValue ? (
+                isEditing ? (
+                    <div>
+                        ( <input
+                            type="text"
+                            value={item.currentValue}
+                            onChange={(e) => handleInputChange(e, item.field)}
+                            className="border-b border-gray-400 w-40 text-center min-w-[200px]"
+                            placeholder={item.savedValue}
+                        /> )
+                    </div>
+                ) : (
+                    <span className="hover:text-blue-600">
+                        ({item.savedValue})
+                    </span>
+                )
+            ) : (
+                <div>
+                    ( <input
+                        type="text"
+                        value={item.currentValue}
+                        onChange={(e) => handleInputChange(e, item.field)}
+                        className="border-b border-gray-400 w-40 text-center min-w-[200px]"
+                        placeholder="กรอกชื่อบุคคล"
+                    /> )
+                </div>
+            )}
+            <p>{item.title}</p>
         </div>
+    ))}
+</div>
+            <div className="flex justify-end mb-4">
+    {!isFormComplete() && !isSaved && !isEditing && (
+        <p className="text-red-500 text-sm mt-7 mr-2">* กรุณากรอกข้อมูลให้ครบก่อนบันทึก</p>
+    )}
+    
+    {(isEditing || !isSaved) && (
+        <button
+            onClick={handleSave}
+            disabled={!isFormComplete() && !isEditing}
+            className={`flex items-center gap-2 px-6 py-2 mt-4 text-white rounded-lg shadow-md transition-all duration-200 cursor-pointer 
+                ${(isFormComplete() || isEditing) ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"}`}
+        >
+            {isEditing ? 'บันทึกการแก้ไข' : 'บันทึก'}
+        </button>
+    )}
+</div>
+        </div>
+    </div>
         
     );
 };
