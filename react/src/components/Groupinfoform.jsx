@@ -101,10 +101,11 @@ const generateSubterms = (term) => {
             sublevel: sublevel,
             group_name: groupName,
             term: termVal,
-            subterm: subterm, // use the subterm here
+            subterm: subterm,
             summer: null,
             year: formYear + i,
-        });
+            student_id: studentId  // 👈 เพิ่มตรงนี้
+        });        
     }
 
     // === 2. สร้าง record สำหรับข้อมูลจาก form (Summer) ===
@@ -115,9 +116,10 @@ const generateSubterms = (term) => {
             sublevel: null,
             group_name: groupName,
             term: termVal,
-            subterm: subtermArray[0], // Use subterm from the array for summer
+            subterm: subtermArray[0],
             summer: parseInt(summer, 10),
             year: parseInt(summer, 10),
+            student_id: studentId  // 👈 เพิ่มตรงนี้
         });
     }
     summerYear.forEach((sy, index) => {
@@ -127,9 +129,10 @@ const generateSubterms = (term) => {
                 sublevel: null,
                 group_name: groupName,
                 term: termVal,
-                subterm: subtermArray[index], // Ensure subterm is correctly indexed
+                subterm: subtermArray[index],
                 summer: parseInt(sy, 10),
                 year: parseInt(sy, 10),
+                student_id: studentId  // 👈 เพิ่มตรงนี้
             });
         }
     });

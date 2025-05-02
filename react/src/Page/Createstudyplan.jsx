@@ -277,14 +277,14 @@ function Createstudyplan() {
                         </div>
 
                         <div>
-                            <label htmlFor="student_id" className="block font-medium">รหัสนักศึกษา</label>
+                            <label htmlFor="student_id" className="block font-medium">รหัส</label>
                             <input
                                 type="number"
                                 name="student_id"
                                 value={student_id}
                                 onChange={(e) => setStudent_id(e.target.value)}
                                 className="border-2 border-gray-700 rounded-lg w-full p-2"
-                                placeholder="กรอกรหัสนักศึกษา"
+                                placeholder="กรอกรหัส"
                                 min="0"
                                 required
                             />

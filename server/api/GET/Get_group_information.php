@@ -9,8 +9,9 @@ try {
         FROM group_information gi
         LEFT JOIN group_information fallback
             ON gi.summer IS NOT NULL 
+            AND gi.planid = fallback.planid
             AND gi.group_name = fallback.group_name 
-            AND gi.year = fallback.year 
+            AND gi.summer = fallback.year 
             AND fallback.summer IS NULL
     ");
     $stmt->execute();

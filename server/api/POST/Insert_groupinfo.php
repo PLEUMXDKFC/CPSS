@@ -43,8 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // ส่วนที่เหลือเหมือนเดิม...
         $conn->beginTransaction();
         
-        $sql = "INSERT INTO group_information (planid, sublevel, group_name, term, subterm, summer, year)
-                VALUES (:planid, :sublevel, :group_name, :term, :subterm, :summer, :year)";
+        $sql = "INSERT INTO group_information (planid, sublevel, group_name, term, subterm, summer, year,student_id)
+                VALUES (:planid, :sublevel, :group_name, :term, :subterm, :summer, :year,:student_id)";
         $stmt = $conn->prepare($sql);
         
         foreach ($records as $index => $record) {
@@ -71,7 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':term' => $record['term'],
                 ':subterm' => $record['subterm'],
                 ':summer' => $record['summer'] ?? null,
-                ':year' => $record['year']
+                ':year' => $record['year'],
+                ':student_id' => $record['student_id'] ?? null
             ]);
         }
         

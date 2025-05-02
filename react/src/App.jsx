@@ -15,6 +15,9 @@ import Courseinfo from './Page/Courseinfo';
 import Courseadd from './Page/Courseadd';
 import Redirectmohou from './Page/Redirectmohou';
 import Intomohou from './Page/Intomohou';
+import Makeplan from './Page/makeplan';
+import Intocheckplan from './Page/intocheckplan';
+import Checkplan from './Page/checkplan';
 
 function App() {
   return (
@@ -35,6 +38,9 @@ function App() {
       <Route path="/Courseadd" element={<Courseadd />} />
       <Route path="/Intomohou" element={<Intomohou />} />
       <Route path="/Redirectmohou/:planid" element={<Redirectmohou />} />
+      <Route path="/makeplan" element={<Makeplan />} />
+      <Route path="/intocheckplan" element={<Intocheckplan />} />
+      <Route path="/checkplan" element={<Checkplan />} />
     </Routes>
   );
 }

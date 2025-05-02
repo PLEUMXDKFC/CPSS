@@ -42,7 +42,7 @@ const intoprintplan = () => {
                                 `/printplan?planid=${plan.planid}&course=${encodeURIComponent(plan.course)}&year=${plan.year}&student_id=${plan.student_id}`
                               )}>
                             <h3 className="text-xl font-semibold text-blue-600 mb-2">{plan.course}</h3>
-                            <p className="text-gray-700">ปีการศึกษา: {plan.year} รหัส: {plan.student_id} </p>
+                            <p className="text-gray-700">พุทธศักราช: {plan.year} รหัส: {plan.student_id} </p>
                         </div>
                     ))}
                 </div>

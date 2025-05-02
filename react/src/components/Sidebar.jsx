@@ -71,11 +71,20 @@ function Sidebar() {
             </Link>
           </li>
           <li>
-            <Link to="/intoplan"  className={`flex items-center p-2 rounded-md hover:bg-white/20 transition  ${location.pathname.includes('/intoplan') || location.pathname.includes('/plan') ||  location.pathname.includes('/add-subject') ? 'bg-white/20' : ''}`}>
+            <Link to="/makeplan"  className={`flex items-center p-2 rounded-md hover:bg-white/20 transition  ${ location.pathname.includes('/makeplan') || location.pathname.includes('/intoplan') ||  location.pathname.includes('/plan') ||  location.pathname.includes('/add-subject') ? 'bg-white/20' : ''}`}>
               <LucideIcons.Calendar className="w-5 h-5 mr-2" />
               สร้างแผนการเรียน
             </Link>
           </li>
+          <li>
+          <Link 
+            to="/intocheckplan"  
+            className={`flex items-center p-2 rounded-md hover:bg-white/20 transition  ${ location.pathname.includes('/checkplan') || location.pathname.includes('/intocheckplan')  ? 'bg-white/20' : ''}`}
+          >
+            <LucideIcons.CheckCircle className="w-5 h-5 mr-2" /> {/* เปลี่ยนจาก Calendar เป็น CheckCircle */}
+            ใบตรวจเช็คการจัดแผนการเรียน
+          </Link>
+        </li>
         </ul>
 
         <hr className="border-gray-500 my-4" />

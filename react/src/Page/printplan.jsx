@@ -80,21 +80,48 @@ const Printplan = () => {
         }
     };
 
-    // แยกข้อมูลออกเป็น "ระดับ" และ "ชั้นปี"
     let level = "ไม่ระบุ";
     let year = "";
     
+  // แก้ไขส่วนการตรวจสอบเงื่อนไข summer และการกำหนดค่า level และ year
+  if (selectedGroupData?.summer !== null) {
+    const fallbackRecord = groupData.find(
+        record => record.year === selectedGroupData.year && 
+        record.sublevel && 
+        record.summer === null
+    );
+
+    if (fallbackRecord?.sublevel) {
+        if (fallbackRecord.sublevel.includes("ปวช.")) {
+            level = "ปวช.";
+            // แสดงแค่ตัวเลข
+            year = fallbackRecord.sublevel.replace(/[^0-9]/g, "");
+        } else if (fallbackRecord.sublevel.includes("ปวส.") && fallbackRecord.sublevel.includes("ม.6")) {
+            level = "ปวส.ม.6";
+            // แสดงเลขแต่ไม่รวมเลขที่มากับ ม.6
+            year = fallbackRecord.sublevel
+                .replace("ม.6", "") // ลบ ม.6 ออกก่อน
+                .replace(/[^0-9]/g, ""); // แล้วค่อยดึงเฉพาะตัวเลข
+        } else if (fallbackRecord.sublevel.includes("ปวส.")) {
+            level = "ปวส.";
+            year = fallbackRecord.sublevel.replace(/[^0-9]/g, "");
+        }
+    }
+} else if (subLevel) {
     if (subLevel.includes("ปวช.")) {
         level = "ปวช.";
-        year = subLevel.replace("ปวช.", ""); // ดึงเฉพาะตัวเลขปี
+        year = subLevel.replace(/[^0-9]/g, "");
     } else if (subLevel.includes("ปวส.") && subLevel.includes("ม.6")) {
         level = "ปวส.ม.6";
-        year = subLevel.replace("ปวส.ม.6.", ""); 
+        // แสดงเลขแต่ไม่รวมเลขที่มากับ ม.6
+        year = subLevel
+            .replace("ม.6", "") // ลบ ม.6 ออกก่อน
+            .replace(/[^0-9]/g, ""); // แล้วค่อยดึงเฉพาะตัวเลข
     } else if (subLevel.includes("ปวส.")) {
         level = "ปวส.";
-        year = subLevel.replace("ปวส.", ""); 
+        year = subLevel.replace(/[^0-9]/g, "");
     }
-    
+}
     
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const queryParams = new URLSearchParams(location.search);
@@ -140,23 +167,36 @@ const Printplan = () => {
             }).then((response) => {
                 const courses = Array.isArray(response.data) ? response.data : [];
                 const groupedData = { "1": {}, "2": {} };
+                
                 courses.forEach(course => {
-                    const term = [1, 3, 5].includes(Number(course.term)) ? "1" : "2";
-                    if (!groupedData[term][course.subject_category]) {
-                        groupedData[term][course.subject_category] = {};
+                    if (selectedGroupData?.summer !== null) {
+                        // กรณีภาคฤดูร้อน ให้เก็บข้อมูลในเทอม 1 ทั้งหมด
+                        if (!groupedData["1"][course.subject_category]) {
+                            groupedData["1"][course.subject_category] = {};
+                        }
+                        if (!groupedData["1"][course.subject_category][course.subject_groups]) {
+                            groupedData["1"][course.subject_category][course.subject_groups] = [];
+                        }
+                        groupedData["1"][course.subject_category][course.subject_groups].push(course);
+                    } else {
+                        // กรณีภาคปกติ
+                        const term = [1, 3, 5].includes(Number(course.term)) ? "1" : "2";
+                        if (!groupedData[term][course.subject_category]) {
+                            groupedData[term][course.subject_category] = {};
+                        }
+                        if (!groupedData[term][course.subject_category][course.subject_groups]) {
+                            groupedData[term][course.subject_category][course.subject_groups] = [];
+                        }
+                        groupedData[term][course.subject_category][course.subject_groups].push(course);
                     }
-                    if (!groupedData[term][course.subject_category][course.subject_groups]) {
-                        groupedData[term][course.subject_category][course.subject_groups] = [];
-                    }
-                    groupedData[term][course.subject_category][course.subject_groups].push(course);
                 });
                 setTableData(groupedData);
             }).catch((error) => {
                 console.error("Error fetching course information:", error);
             });
         }
-        setIsSaved(false); // กลับมาให้บันทึกใหม่
-    }, [selectedGroup]);
+        setIsSaved(false);
+    }, [selectedGroup, selectedGroupData?.summer]);
     
     const handleBack = () => {
         navigate(-1);
@@ -260,6 +300,17 @@ const Printplan = () => {
     }, [selectedGroup, planid]);
 
     const isFormComplete = () => {
+        // ตรวจสอบว่าเป็นภาคฤดูร้อนหรือไม่
+        if (selectedGroupData?.summer !== null) {
+            return (
+                jobDescription1.trim() !== "" &&
+                headOfDepartment.trim() !== "" &&
+                headOfCurriculum.trim() !== "" &&
+                deputyDirector.trim() !== "" &&
+                director.trim() !== ""
+            );
+        }
+        // กรณีภาคเรียนปกติ ต้องกรอกข้อมูลทั้งหมด
         return (
             jobDescription1.trim() !== "" &&
             jobDescription2.trim() !== "" &&
@@ -296,26 +347,50 @@ const Printplan = () => {
                     </thead>
                     <tbody>
                         {groupData.length > 0 ? (
-                            groupData.map((item, index) => (
-                                <tr key={index} className="text-center">
-                                    <td className="border border-gray-300 p-2">{item.sublevel ?? "summer"}</td>
-                                    <td className="border border-gray-300 p-2">{item.group_name}</td>
-                                    <td className="border border-gray-300 p-2">{item.subterm}</td>
-                                    <td className="border border-gray-300 p-2">{item.year}</td>
-                                    <td className="border border-gray-300 p-2">
-                                    <input 
-                                        type="checkbox" 
-                                        name="groupSelection" 
-                                        value={item.infoid} 
-                                        checked={selectedGroup === item.infoid} 
-                                        onChange={() => {
-                                            setSelectedGroup(item.infoid); // ✅ เมื่อเปลี่ยน group จะ trigger useEffect
-                                        }} 
-                                        className="w-5 h-5 accent-blue-500 cursor-pointer " 
-                                    />
-                                    </td>
-                                </tr>
-                            ))
+                            groupData.map((item, index) => {
+                                // หา record ที่ year เดียวกัน และ sublevel ไม่ว่าง และไม่ใช่ summer
+                                const fallbackRecord = groupData.find(
+                                    record => record.year === item.year && record.sublevel && record.sublevel !== "summer"
+                                );
+
+                                let displaySublevel = "";
+
+                                if (item.sublevel === "summer") {
+                                    // ถ้า sublevel เป็น summer → ใช้ fallback + " summer"
+                                    displaySublevel = fallbackRecord ? `${fallbackRecord.sublevel} summer` : "summer";
+                                } else if (!item.sublevel) {
+                                    // ถ้า sublevel เป็น null หรือว่าง → ใช้ fallback + " ภาคเรียนฤดูร้อน"
+                                    displaySublevel = fallbackRecord 
+                                        ? `${fallbackRecord.sublevel} ภาคเรียนฤดูร้อน`
+                                        : "ภาคเรียนฤดูร้อน";  // fallback ไม่มี ก็แสดงแค่ "ภาคเรียนฤดูร้อน"
+                                } else {
+                                    // ปกติ → ใช้ sublevel ธรรมดา
+                                    displaySublevel = item.term === "summer" 
+                                        ? `${item.sublevel} summer`
+                                        : item.sublevel;
+                                }
+
+                                return (
+                                    <tr key={index} className="text-center">
+                                        <td className="border border-gray-300 p-2">
+                                            {displaySublevel || "ไม่ระบุ"}
+                                        </td>
+                                        <td className="border border-gray-300 p-2">{item.group_name}</td>
+                                        <td className="border border-gray-300 p-2">{item.subterm}</td>
+                                        <td className="border border-gray-300 p-2">{item.year}</td>
+                                        <td className="border border-gray-300 p-2">
+                                            <input 
+                                                type="checkbox" 
+                                                name="groupSelection" 
+                                                value={item.infoid} 
+                                                checked={selectedGroup === item.infoid} 
+                                                onChange={() => setSelectedGroup(item.infoid)}
+                                                className="w-5 h-5 accent-blue-500 cursor-pointer"
+                                            />
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         ) : (
                             <tr>
                                 <td colSpan={5} className="border border-gray-300 p-2 text-center text-gray-500">
@@ -388,60 +463,89 @@ const Printplan = () => {
             <div ref={printRef} className="print-area">
             <table className="w-full border  text-sm mt-6">
                 <thead>
+                        <tr>
+                            <th colSpan={10} className="border-1 p-1 text-center">
+                                แผนการเรียน{planDetail?.plan_name.replace("หลักสูตร", "").replace("(ม.6)", "").trim() || "ไม่มีข้อมูล"} ({level}) ชั้นปีที่ {year} รหัส {planDetail?.plan_code || "-"}
+                                {selectedGroup && groupData.length >= 5 ? (
+                                    ` ก.${groupData.find(item => item.infoid === selectedGroup)?.group_name || ""}`
+                                ) : ""}
+                            </th>
+                        </tr>
+                        <tr>
+                            {selectedGroupData?.summer !== null ? (
+                                <>
+                                <th colSpan={5} className="border-1 p-1 text-center">
+                                    ภาคเรียนที่ ฤดูร้อน ปีการศึกษา {selectedGroupData?.summer || "-"}
+                                </th>
+                                <th colSpan={5} className="border-1 p-1 text-center">
+                                    ภาคเรียนที่ ฤดูร้อน ปีการศึกษา ............
+                                </th>
+                                </>
+                            ) : (
+                                <>
+                                    <th colSpan={5} className="border-1 p-1 text-center">
+                                        ภาคเรียนที่ 1 ปีการศึกษา {selectedGroupData?.year || "-"}
+                                    </th>
+                                    <th colSpan={5} className="border-1 p-1 text-center">
+                                        ภาคเรียนที่ 2 ปีการศึกษา {selectedGroupData?.year || "-"}
+                                    </th>
+                                </>
+                            )}
+                        </tr>
+                    </thead>
                     <tr>
-                    <th colSpan={10} className="border-1 p-1 text-center">
-                        แผนการเรียน{planDetail?.plan_name.replace("หลักสูตร", "").replace("(ม.6)", "").trim() || "ไม่มีข้อมูล"} ({level}) ชั้นปีที่ {year} รหัส {planDetail?.plan_code || "-"}
-                    </th>
-
-
-
-                    </tr>
-                    <tr>
-                    <th colSpan={5} className="border-1 p-1 text-center">
-                        ภาคเรียนที่ 1 ปีการศึกษา {selectedGroupData?.year || "-"}
-                    </th>
-                    <th colSpan={5} className="border-1 p-1 text-center">
-                        ภาคเรียนที่ 2 ปีการศึกษา {selectedGroupData?.year || "-"}
-                    </th>
-
-                    </tr>
-                    <tr>
-                    <th colSpan={5} className="border-1 p-1 text-center w-auto whitespace-nowrap">
-                        ลักษณะงาน:{" "}
-                        {savedJobDescription1 ? (
-                            isEditing ? (
+                        <th colSpan={5} className="border-1 p-1 text-center w-auto whitespace-nowrap">
+                            ลักษณะงาน:{" "}
+                            {savedJobDescription1 ? (
+                                isEditing ? (
+                                    <input
+                                        type="text"
+                                        value={jobDescription1}
+                                        onChange={(e) => setJobDescription1(e.target.value)}
+                                        className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
+                                        placeholder={savedJobDescription1}
+                                    />
+                                ) : (
+                                    <span className="hover:text-blue-600">{savedJobDescription1}</span>
+                                )
+                            ) : (
                                 <input
                                     type="text"
                                     value={jobDescription1}
                                     onChange={(e) => setJobDescription1(e.target.value)}
                                     className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
-                                    placeholder={savedJobDescription1}
+                                    placeholder="กรอกลักษณะงานภาคเรียนที่ 1"
                                 />
+                            )}
+                        </th>
+                        <th colSpan={5} className="border-1 p-1 text-center w-auto whitespace-nowrap">
+                            ลักษณะงาน:{" "}
+                            {selectedGroupData?.summer !== null ? (
+                                <span>.....................................................</span>
                             ) : (
-                                <span className="hover:text-blue-600">{savedJobDescription1}</span>
-                            )
-                        ) : (
-                            <input
-                                type="text"
-                                value={jobDescription1}
-                                onChange={(e) => setJobDescription1(e.target.value)}
-                                className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
-                                placeholder="กรอกลักษณะงานภาคเรียนที่ 1"
-                            />
-                        )}
-                    </th>
-                    <th colSpan={5} className="border-1 p-1 text-center w-auto whitespace-nowrap">
-                        ลักษณะงาน:{" "}
-                        {savedJobDescription2 || (
-                            <input
-                                type="text"
-                                value={jobDescription2}
-                                onChange={(e) => setJobDescription2(e.target.value)}
-                                className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
-                                placeholder="กรอกลักษณะงานภาคเรียนที่ 2"
-                            />
-                        )}
-                    </th>
+                                savedJobDescription2 ? (
+                                    isEditing ? (
+                                        <input
+                                            type="text"
+                                            value={jobDescription2}
+                                            onChange={(e) => setJobDescription2(e.target.value)}
+                                            className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
+                                            placeholder={savedJobDescription2}
+                                        />
+                                    ) : (
+                                        <span className="hover:text-blue-600">{savedJobDescription2}</span>
+                                    )
+                                ) : (
+                                    <input
+                                        type="text"
+                                        value={jobDescription2}
+                                        onChange={(e) => setJobDescription2(e.target.value)}
+                                        className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
+                                        placeholder="กรอกลักษณะงานภาคเรียนที่ 2"
+                                    />
+                                )
+                            )}
+                        </th>
                     </tr>
                     <tr className="text-center">
                         <th className="border-1  p-1 w-24">รหัสวิชา</th>
@@ -455,7 +559,6 @@ const Printplan = () => {
                         <th className="border-1  p-1 w-12">ป</th>
                         <th className="border-1  p-1 w-12">น</th>
                     </tr>
-                </thead>
                 <tbody>
     {Object.keys(tableData["1"] || {}).map(category => (
         <React.Fragment key={category}>
@@ -539,44 +642,47 @@ const Printplan = () => {
 
     {/* ✅ แถวสุดท้าย แสดงผลรวมทั้งหมด ✅ */}
     {(() => {
-        let totalTerm1 = { theory: 0, comply: 0, credit: 0 };
-        let totalTerm2 = { theory: 0, comply: 0, credit: 0 };
+    let totalTerm1 = { theory: 0, comply: 0, credit: 0 };
+    let totalTerm2 = { theory: 0, comply: 0, credit: 0 };
 
-        Object.keys(tableData["1"] || {}).forEach(category => {
-            Object.keys(tableData["1"][category] || {}).forEach(group => {
-                tableData["1"][category][group]?.forEach(course => {
-                    totalTerm1.theory += Number(course.theory) || 0;
-                    totalTerm1.comply += Number(course.comply) || 0;
-                    totalTerm1.credit += Number(course.credit) || 0;
-                });
+    Object.keys(tableData["1"] || {}).forEach(category => {
+        Object.keys(tableData["1"][category] || {}).forEach(group => {
+            tableData["1"][category][group]?.forEach(course => {
+                totalTerm1.theory += Number(course.theory) || 0;
+                totalTerm1.comply += Number(course.comply) || 0;
+                totalTerm1.credit += Number(course.credit) || 0;
             });
         });
+    });
 
-        Object.keys(tableData["2"] || {}).forEach(category => {
-            Object.keys(tableData["2"][category] || {}).forEach(group => {
-                tableData["2"][category][group]?.forEach(course => {
-                    totalTerm2.theory += Number(course.theory) || 0;
-                    totalTerm2.comply += Number(course.comply) || 0;
-                    totalTerm2.credit += Number(course.credit) || 0;
-                });
+    Object.keys(tableData["2"] || {}).forEach(category => {
+        Object.keys(tableData["2"][category] || {}).forEach(group => {
+            tableData["2"][category][group]?.forEach(course => {
+                totalTerm2.theory += Number(course.theory) || 0;
+                totalTerm2.comply += Number(course.comply) || 0;
+                totalTerm2.credit += Number(course.credit) || 0;
             });
         });
+    });
 
-        return (
-            <tr className="text-center">
-                <td className="border-1 p-1"></td>
-                <td colSpan={1} className="border-1 p-1">รวม (ไม่เกิน 22 นก.)</td>
-                <td className="border-1 p-1">{totalTerm1.theory}</td>
-                <td className="border-1 p-1">{totalTerm1.comply}</td>
-                <td className="border-1 p-1">{totalTerm1.credit}</td>
-                <td className="border-1 p-1"></td>
-                <td colSpan={1} className="border-1 p-1">รวม (ไม่เกิน 22 นก.)</td>
-                <td className="border-1 p-1">{totalTerm2.theory}</td>
-                <td className="border-1 p-1">{totalTerm2.comply}</td>
-                <td className="border-1 p-1">{totalTerm2.credit}</td>
-            </tr>
-        );
-    })()}
+    const isHighVocM6 = planDetail?.plan_name.includes("หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง (ม.6)");
+    const summerText = isHighVocM6 && selectedGroupData?.summer !== null ? "รวม (ไม่เกิน 9 นก.)" : "รวม (ไม่เกิน 22 นก.)";
+
+    return (
+        <tr className="text-center">
+            <td className="border-1 p-1"></td>
+            <td colSpan={1} className="border-1 p-1">{summerText}</td>
+            <td className="border-1 p-1">{totalTerm1.theory}</td>
+            <td className="border-1 p-1">{totalTerm1.comply}</td>
+            <td className="border-1 p-1">{totalTerm1.credit}</td>
+            <td className="border-1 p-1"></td>
+            <td colSpan={1} className="border-1 p-1">{summerText}</td>
+            <td className="border-1 p-1">{totalTerm2.theory}</td>
+            <td className="border-1 p-1">{totalTerm2.comply}</td>
+            <td className="border-1 p-1">{totalTerm2.credit}</td>
+        </tr>
+    );
+})()}
 </tbody>
             </table>
             <div className="flex justify-between mt-2 px-10">

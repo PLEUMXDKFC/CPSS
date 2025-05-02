@@ -13,18 +13,18 @@ WHERE ci.infoid = :infoid
 ORDER BY 
     CASE 
         WHEN s.subject_category = '1.หมวดวิชาสมรรถนะแกนกลาง' THEN 1
-        WHEN s.subject_category = '2.หมวดวิชาสมรรถนะวิชาชีพ' THEN 2
-        WHEN s.subject_category = '3.หมวดวิชาเลือกเสรี' THEN 3
-        WHEN s.subject_category = '4.กิจกรรมเสริมหลักสูตร' THEN 4
+         WHEN s.subject_category = 'รายวิชาปรับพื้นฐาน' THEN 2
+        WHEN s.subject_category = '2.หมวดวิชาสมรรถนะวิชาชีพ' THEN 3
+        WHEN s.subject_category = '3.หมวดวิชาเลือกเสรี' THEN 4
+        WHEN s.subject_category = '4.กิจกรรมเสริมหลักสูตร' THEN 5
         ELSE 99
     END,
     CASE 
         WHEN s.subject_groups = '1.1 กลุ่มสมรรถนะภาษาและการสื่อสาร' THEN 1
         WHEN s.subject_groups = '1.2 กลุ่มสมรรถนะการคิดและการแก้ปัญหา' THEN 2
         WHEN s.subject_groups = '1.3 กลุ่มสมรรถนะสังคมและการดำรงชีวิต' THEN 3
-        WHEN s.subject_groups = 'รายวิชาปรับพื้นฐาน' THEN 4
-        WHEN s.subject_groups = '2.1 กลุ่มสมรรถนะวิชาชีพพื้นฐาน' THEN 5
-        WHEN s.subject_groups = '2.2 กลุ่มสมรรถนะวิชาชีพเฉพาะ' THEN 6
+        WHEN s.subject_groups = '2.1 กลุ่มสมรรถนะวิชาชีพพื้นฐาน' THEN 4
+        WHEN s.subject_groups = '2.2 กลุ่มสมรรถนะวิชาชีพเฉพาะ' THEN 5
         ELSE 99
     END,
     ci.year, 
