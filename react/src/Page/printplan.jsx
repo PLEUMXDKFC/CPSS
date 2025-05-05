@@ -204,15 +204,26 @@ const Printplan = () => {
     
     // ✅ ฟังก์ชันพิมพ์เฉพาะส่วนของแผนการเรียน
     const handlePrint = () => {
-        const printContent = printRef.current.innerHTML;
+        // เก็บ content เดิม
         const originalContent = document.body.innerHTML;
-
-        document.body.innerHTML = printContent;
+        
+        // แทนที่ content ด้วยส่วนที่ต้องการพิมพ์
+        const printContent = printRef.current.innerHTML;
+        document.body.innerHTML = `
+            <style>
+             @page {
+                size: A3 landscape !important;
+                    margin: 10mm;
+             }
+            </style>
+            ${printContent}
+        `;
+        
+        // พิมพ์และคืนค่า content เดิม
         window.print();
         document.body.innerHTML = originalContent;
-        window.location.reload(); // ✅ รีโหลดหน้าเพื่อคืนค่าเดิม
+        window.location.reload();
     };
-
     // แก้ไขฟังก์ชัน handleSave
     const handleSave = () => {
         axios.post(`${API_BASE_URL}/server/api/POST/save_more_plan.php`, {
@@ -494,30 +505,32 @@ const Printplan = () => {
                         </tr>
                     </thead>
                     <tr>
-                        <th colSpan={5} className="border-1 p-1 text-center w-auto whitespace-nowrap">
-                            ลักษณะงาน:{" "}
-                            {savedJobDescription1 ? (
-                                isEditing ? (
-                                    <input
-                                        type="text"
-                                        value={jobDescription1}
-                                        onChange={(e) => setJobDescription1(e.target.value)}
-                                        className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
-                                        placeholder={savedJobDescription1}
-                                    />
-                                ) : (
-                                    <span className="hover:text-blue-600">{savedJobDescription1}</span>
-                                )
-                            ) : (
+                    <th colSpan={5} className="border-1 p-1 text-center w-auto whitespace-nowrap">
+                        ลักษณะงาน:{" "}
+                        {savedJobDescription1 ? (
+                            isEditing ? (
                                 <input
                                     type="text"
                                     value={jobDescription1}
                                     onChange={(e) => setJobDescription1(e.target.value)}
                                     className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
-                                    placeholder="กรอกลักษณะงานภาคเรียนที่ 1"
+                                    placeholder={savedJobDescription1}
                                 />
-                            )}
-                        </th>
+                            ) : (
+                                <span className="hover:text-blue-600">{savedJobDescription1}</span>
+                            )
+                        ) : (
+                            <input
+                                type="text"
+                                value={jobDescription1}
+                                onChange={(e) => setJobDescription1(e.target.value)}
+                                className="border border-gray-400 rounded px-2 py-1 w-auto min-w-[350px]"
+                                placeholder={selectedGroupData?.summer !== null 
+                                    ? "กรอกลักษณะงานภาคเรียนฤดูร้อน" 
+                                    : "กรอกลักษณะงานภาคเรียนที่ 1"}
+                            />
+                        )}
+                    </th>
                         <th colSpan={5} className="border-1 p-1 text-center w-auto whitespace-nowrap">
                             ลักษณะงาน:{" "}
                             {selectedGroupData?.summer !== null ? (
@@ -685,7 +698,7 @@ const Printplan = () => {
 })()}
 </tbody>
             </table>
-            <div className="flex justify-between mt-2 px-10">
+            <div className="flex justify-between mt-2 px-10 ">
     {[
         {
             title: "หัวหน้าแผนกวิชาเทคนิคคอมพิวเตอร์",

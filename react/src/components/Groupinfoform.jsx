@@ -280,7 +280,7 @@ const generateSubterms = (term) => {
                         </div>
 
                         <div className='flex flex-col gap-2'>
-                            <h1 className="text-[20px]">ภาคเรียนฤดูร้อน</h1>
+                            <h1 className="text-[20px]">จำนวนภาคเรียนฤดูร้อน</h1>
                             <input
                                 type="number"
                                 className="p-1 h-auto border rounded-lg"
@@ -293,7 +293,7 @@ const generateSubterms = (term) => {
                         {/* ส่วน input สำหรับ summer และ summerYear */}
 
                         <div className="flex flex-col gap-2 items-center">
-                            <h1 className="text-[20px]">ปีภาคเรียนฤดูร้อน</h1>
+                            <h1 className="text-[20px]">ปีการศึกษาภาคเรียนฤดูร้อน</h1>
                             <input
                                 className="p-1 h-auto border rounded-lg"
                                 placeholder="ปีภาคเรียนฤดูร้อน 1"

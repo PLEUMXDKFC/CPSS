@@ -244,7 +244,7 @@ const StudyPlan = () => {
                                 <th className="border border-gray-300 p-2">ระดับชั้น</th>
                                 <th className="border border-gray-300 p-2">กลุ่ม</th>
                                 <th className="border border-gray-300 p-2">เทอม</th>
-                                <th className="border border-gray-300 p-2">ปีภาคเรียนฤดูร้อน</th>
+                                <th className="border border-gray-300 p-2">ปีการศึกษาภาคเรียนฤดูร้อน</th>
                                 <th className="border border-gray-300 p-2">จัดการ</th>
                             </tr>
                         </thead>

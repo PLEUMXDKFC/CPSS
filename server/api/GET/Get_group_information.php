@@ -5,7 +5,10 @@ try {
     $stmt = $conn->prepare("
         SELECT 
             gi.*,
-            COALESCE(gi.sublevel, fallback.sublevel) AS sublevel
+            COALESCE(
+                gi.sublevel,
+                fallback.sublevel
+            ) AS sublevel
         FROM group_information gi
         LEFT JOIN group_information fallback
             ON gi.summer IS NOT NULL 
@@ -21,5 +24,4 @@ try {
 } catch (PDOException $e) {
     echo json_encode(["error" => "Query failed: " . $e->getMessage()]);
 }
-
 ?>
