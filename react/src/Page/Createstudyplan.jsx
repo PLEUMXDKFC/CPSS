@@ -3,12 +3,13 @@ import Sidebar from '../components/sidebar'
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { LucideEdit, LucideEye, LucideTrash, LucideCheck, LucideX } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function Createstudyplan() {
+    const navigate=useNavigate();
     const [course, setCourse] = useState('');
     const [year, setYear] = useState('');
     const [student_id, setStudent_id] = useState('');
-    const [group, setGroup] = useState('');
     const [message, setMessage] = useState('');
     const [plans, setPlans] = useState([]); // สร้าง state สำหรับเก็บข้อมูลแผน
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -18,8 +19,7 @@ function Createstudyplan() {
     const [editFormData, setEditFormData] = useState({
         course: '',
         year: '',
-        student_id: '',
-        group: ''
+        student_id: ''
     });
 
     // ฟังก์ชันสำหรับยกเลิกการกรอกข้อมูล
@@ -27,7 +27,6 @@ function Createstudyplan() {
         setCourse(""); // รีเซ็ตหลักสูตร
         setYear(""); // รีเซ็ตพุทธศักราช
         setStudent_id(""); // รีเซ็ตรหัสนักศึกษา
-        setGroup(""); // รีเซ็ตกลุ่ม
     };
 
     // ฟังก์ชันสำหรับบันทึกข้อมูล
@@ -37,15 +36,12 @@ function Createstudyplan() {
         const data = {
         course: course,
         year: year,
-        student_id: student_id,
-        group: group
+        student_id: student_id
         };
 
-        console.log('ข้อมูลที่กรอก:', data);
         try {
         // ส่งข้อมูลไปยัง API ด้วย axios
         const response = await axios.post(`${API_BASE_URL}/server/api/POST/Insertstudyplan.php`, data);
-        console.log("API Response:", response); // ตรวจสอบค่า response ที่ได้รับ
 
         // ตรวจสอบการตอบกลับจาก API และแสดง SweetAlert
         if (response.data.message === "Data inserted successfully") {
@@ -70,8 +66,6 @@ function Createstudyplan() {
             handleCancel(); // รีเซ็ตฟอร์ม
         }
         } catch (error) {
-        // หากเกิดข้อผิดพลาดแสดง SweetAlert
-        console.error('Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'เกิดข้อผิดพลาด!',
@@ -105,11 +99,12 @@ function Createstudyplan() {
             });
         });
     }, []);
-
+    
     const handleDelete = async (planId) => {
+    
         Swal.fire({
-            title: 'คุณแน่ใจหรือไม่?',
-            text: "คุณต้องการลบแผนการเรียนนี้หรือไม่?",
+            title: 'คุณต้องการลบหลักสูตรนี้หรือไม่?',
+            text: "ข้อมูลในหลักสูตรนี้จะหายทั้งหมด!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
@@ -119,11 +114,16 @@ function Createstudyplan() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    // เรียก API delete
-                    const response = await axios.delete(`${API_BASE_URL}/server/api/DELETE/Deletestudyplan.php`, {
-                        data: { planid: planId }
+                    let formData = new FormData();
+                    formData.append('_method', 'DELETE');  // บอกว่าเป็น DELETE
+                    formData.append('planid', planId);    // ส่ง planid
+    
+                    const response = await axios.post(`${API_BASE_URL}/server/api/DELETE/Deletestudyplan.php`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data' // บอกเซิร์ฟเวอร์ว่าเป็น FormData
+                        }
                     });
-
+    
                     if (response.data.status === "success") {
                         Swal.fire({
                             icon: 'success',
@@ -134,6 +134,7 @@ function Createstudyplan() {
                             fetchData(); // รีเฟรชข้อมูลหลังจากลบ
                         });
                     } else {
+                        console.warn("⚠️ Delete failed:", response.data);
                         Swal.fire({
                             icon: 'error',
                             title: 'เกิดข้อผิดพลาด!',
@@ -142,7 +143,7 @@ function Createstudyplan() {
                         });
                     }
                 } catch (error) {
-                    console.error("Error deleting data:", error);
+                    console.error("❌ Error deleting data:", error);
                     Swal.fire({
                         icon: 'error',
                         title: 'เกิดข้อผิดพลาด!',
@@ -153,23 +154,23 @@ function Createstudyplan() {
             }
         });
     };
-
+    
+    
     // ฟังก์ชันสำหรับการแก้ไขแบบ inline
     const handleEditClick = (plan) => {
         setEditingId(plan.planid);
         setEditFormData({
             course: plan.course,
             year: plan.year,
-            student_id: plan.student_id,
-            group: plan.group
+            student_id: plan.student_id
         });
     };
-
+    
     // ฟังก์ชันสำหรับการยกเลิกการแก้ไข
     const handleCancelEdit = () => {
         setEditingId(null);
     };
-
+    
     // ฟังก์ชันสำหรับการเปลี่ยนแปลงข้อมูลในฟอร์มแก้ไข
     const handleEditFormChange = (e) => {
         const { name, value } = e.target;
@@ -178,15 +179,16 @@ function Createstudyplan() {
             [name]: value
         });
     };
-
+    
     // ฟังก์ชันสำหรับบันทึกข้อมูลที่แก้ไข
     const handleEditSubmit = async () => {
+    
         try {
-            const response = await axios.put(`${API_BASE_URL}/server/api/UPDATE/UpdateStudyPlan.php`, {
+            const response = await axios.post(`${API_BASE_URL}/server/api/UPDATE/Updatestudyplan.php`, {
                 planid: editingId,
                 ...editFormData
             });
-
+    
             if (response.data.status === "success") {
                 const Toast = Swal.mixin({
                     toast: true,
@@ -201,12 +203,13 @@ function Createstudyplan() {
                 });
                 Toast.fire({
                     icon: "success",
-                    title: "ข้อมูลถูกอัปเดตสำเร็จ!"
+                    title: "ข้อมูลถูกแก้ไขแล้ว!"
                 });
-
+    
                 fetchData(); // รีเฟรชข้อมูล
                 setEditingId(null); // ปิดโหมดแก้ไข
             } else {
+                console.warn("⚠️ Update failed:", response.data);
                 Swal.fire({
                     icon: 'error',
                     title: 'เกิดข้อผิดพลาด!',
@@ -215,7 +218,7 @@ function Createstudyplan() {
                 });
             }
         } catch (error) {
-            console.error("Error updating data:", error);
+            console.error("❌ Error updating data:", error);
             Swal.fire({
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาด!',
@@ -224,17 +227,18 @@ function Createstudyplan() {
             });
         }
     };
+    
 
     // Return the UI
     return (
         <>
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen ">
         <Sidebar />
-            <div className="ml-65 container mx-auto p-4">
+            <div className="ml-65 container mx-auto p-4 ">
                 <h2 className="text-center mb-4 text-2xl font-bold">สร้างหลักสูตร</h2>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <form onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-3 md:grid-cols-3 gap-2">
                         <div>
                             <label htmlFor="course" className="block font-medium">หลักสูตร</label>
                             <select
@@ -247,6 +251,7 @@ function Createstudyplan() {
                                 <option value="" disabled>เลือกหลักสูตร</option>
                                 <option value="หลักสูตรประกาศณียบัตรวิชาชีพ">หลักสูตรประกาศณียบัตรวิชาชีพ</option>
                                 <option value="หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง">หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง</option>
+                                <option value="หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง (ม.6)">หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง (ม.6)</option>
                             </select>
                         </div>
 
@@ -270,9 +275,6 @@ function Createstudyplan() {
                                 required
                             />
                         </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
                             <label htmlFor="student_id" className="block font-medium">รหัสนักศึกษา</label>
                             <input
@@ -285,25 +287,6 @@ function Createstudyplan() {
                                 min="0"
                                 required
                             />
-                        </div>
-
-                        <div>
-                            <label htmlFor="group" className="block font-medium">กลุ่ม</label>
-                            <select
-                                name="group"
-                                value={group}
-                                onChange={(e) => setGroup(e.target.value)}
-                                className="border-2 border-gray-700 rounded-lg w-full p-2"
-                                required
-                            >
-                                <option value="" disabled>เลือกกลุ่ม</option>
-                                <option value="1">1</option>
-                                <option value="1-2">1-2</option>
-                                <option value="3">3</option>
-                                <option value="3-4">3-4</option>
-                                <option value="5">5</option>
-                                <option value="5-6">5-6</option>
-                            </select>
                         </div>
                     </div>
 
@@ -332,7 +315,6 @@ function Createstudyplan() {
                                 <th className="border border-gray-300 p-2">หลักสูตร</th>
                                 <th className="border border-gray-300 p-2">พุทธศักราช</th>
                                 <th className="border border-gray-300 p-2">รหัส</th>
-                                <th className="border border-gray-300 p-2">กลุ่ม</th>
                                 <th className="border border-gray-300 p-2">จัดการ</th>
                             </tr>
                         </thead>
@@ -350,6 +332,7 @@ function Createstudyplan() {
                                             >
                                                 <option value="หลักสูตรประกาศณียบัตรวิชาชีพ">หลักสูตรประกาศณียบัตรวิชาชีพ</option>
                                                 <option value="หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง">หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง</option>
+                                                <option value="หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง (ม.6)">หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง (ม.6)</option>
                                             </select>
                                         ) : (
                                             plan.course
@@ -386,26 +369,6 @@ function Createstudyplan() {
                                             plan.student_id
                                         )}
                                     </td>
-                                    <td className="border border-gray-300 p-2">
-                                        {editingId === plan.planid ? (
-                                            <select
-                                                name="group"
-                                                value={editFormData.group}
-                                                onChange={handleEditFormChange}
-                                                className="border border-gray-500 rounded w-full p-1"
-                                                required
-                                            >
-                                                <option value="1">1</option>
-                                                <option value="1-2">1-2</option>
-                                                <option value="3">3</option>
-                                                <option value="3-4">3-4</option>
-                                                <option value="5">5</option>
-                                                <option value="5-6">5-6</option>
-                                            </select>
-                                        ) : (
-                                            plan.group
-                                        )}
-                                    </td>
                                     <td className="border border-gray-300 p-2 text-center">
                                         {editingId === plan.planid ? (
                                             <div className="flex space-x-1 justify-center">
@@ -426,9 +389,9 @@ function Createstudyplan() {
                                             </div>
                                         ) : (
                                             <div className="flex space-x-1 justify-center">
-                                                <a href={`/subjects/${plan.planid}`} className="bg-yellow-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-yellow-600 cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2">
+                                                <button onClick={()=>navigate(`/courseinfo/${plan.planid}`)} className="bg-yellow-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-yellow-600 cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2">
                                                     <LucideEye size={16} /> ดูข้อมูลรายวิชา
-                                                </a>
+                                                </button>
                                         
                                                 <button 
                                                     type="button"
