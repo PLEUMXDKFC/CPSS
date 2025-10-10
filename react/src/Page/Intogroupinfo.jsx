@@ -38,9 +38,9 @@ const StudyPlans = () => {
                     {plans.map(plan => (
                         <div key={plan.planid} 
                             className="bg-white shadow-lg p-6 rounded-xl cursor-pointer hover:bg-blue-200 transition-all"
-                            onClick={() => navigate(`/Groupinfo/${plan.planid}?course=${encodeURIComponent(plan.course)}&year=${plan.year}&student_id=${plan.student_id}`, { state: plan })}>
+                            onClick={() => navigate(`/Groupinfo/${plan.planid}?course=${encodeURIComponent(plan.course)}&year=${plan.year}&student_id=${plan.student_id}&group=${plan.group}`, { state: plan })}>
                             <h3 className="text-xl font-semibold text-blue-600 mb-2">{plan.course}</h3>
-                            <p className="text-gray-700">ปีการศึกษา: {plan.year} รหัส: {plan.student_id}</p>
+                            <p className="text-gray-700">ปีการศึกษา: {plan.year} รหัส: {plan.student_id} กลุ่ม: {plan.group}</p>
                         </div>
                     ))}
                 </div>

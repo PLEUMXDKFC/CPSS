@@ -1,24 +1,21 @@
-<?php
+<?php 
 require_once '../conn.php';
 
-try {
-    $stmt = $conn->prepare("
-        SELECT 
-            gi.*,
-            COALESCE(gi.sublevel, fallback.sublevel) AS sublevel
-        FROM group_information gi
-        LEFT JOIN group_information fallback
-            ON gi.summer IS NOT NULL 
-            AND gi.group_name = fallback.group_name 
-            AND gi.year = fallback.year 
-            AND fallback.summer IS NULL
-    ");
-    $stmt->execute();
-    $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$planid = isset($_GET['planid']) ? intval($_GET['planid']) : 0;
 
-    echo json_encode($groups);
-} catch (PDOException $e) {
-    echo json_encode(["error" => "Query failed: " . $e->getMessage()]);
+if ($planid > 0) {
+    try {
+        // ปรับ SQL query เพื่อดึงเฉพาะ record ที่ sublevel ไม่เป็น null
+        $stmt = $conn->prepare("SELECT * FROM group_information WHERE planid = :planid");
+        $stmt->bindParam(':planid', $planid, PDO::PARAM_INT);
+        $stmt->execute();
+        $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        echo json_encode($groups);
+    } catch (PDOException $e) {
+        echo json_encode(["error" => "Query failed: " . $e->getMessage()]);
+    }
+} else {
+    echo json_encode(["error" => "Invalid planid"]);
 }
-
 ?>

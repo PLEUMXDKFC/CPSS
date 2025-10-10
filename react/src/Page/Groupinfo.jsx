@@ -28,15 +28,14 @@ const StudyPlan = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(
-                `${API_BASE_URL}/server/api/GET/Getgroupforgroup.php?planid=${planid}`
-            );
-            setGroupData(response.data);
+          const response = await axios.get(
+            `${API_BASE_URL}/server/api/GET/Get_group_information.php?planid=${planid}`
+          );
+          setGroupData(response.data);
         } catch (error) {
-            console.error("Error fetching group information:", error);
+          console.error("Error fetching group information:", error);
         }
-    };
-    
+      };
             
         const sublevelGroups = groupData.filter(group => group.sublevel !== null);
         const summerGroups = groupData.filter(group => group.sublevel === null && group.summer !== null);
@@ -77,7 +76,8 @@ const StudyPlan = () => {
         };
 
 
-        const handleDelete = async (planid, groupName) => {
+        // ตัวอย่าง handleDelete ที่ส่ง planid ไปยัง API สำหรับลบ
+        const handleDelete = async (planid) => {
             const result = await Swal.fire({
                 title: 'คุณแน่ใจหรือไม่?',
                 text: "คุณต้องการลบแผนการเรียนนี้หรือไม่?",
@@ -91,15 +91,9 @@ const StudyPlan = () => {
         
             if (result.isConfirmed) {
                 try {
-                    const response = await axios.get(`${API_BASE_URL}/server/api/DELETE/Delete_group_information.php`, {
-                        params: {
-                            planid: planid,
-                            group_name: groupName,
-                        }
-                    });
-                    console.log(response.data);
-                    fetchData(); // โหลดข้อมูลใหม่หลังลบ
-        
+                    const response = await axios.post(`${API_BASE_URL}/server/api/DELETE/Delete_group_information.php?planid=${planid}`);
+                    console.log(response);
+                    fetchData(); // เรียกใช้ฟังก์ชัน fetchData เพื่อนำข้อมูลใหม่
                     Swal.fire({
                         icon: "success",
                         title: "ลบข้อมูลสำเร็จ!",
@@ -112,9 +106,7 @@ const StudyPlan = () => {
                 }
             }
         };
-        
-        
-        
+
 
         const fetchSummerData = async (planid) => {
             try {
@@ -179,6 +171,8 @@ const StudyPlan = () => {
                             summerData: updatedSummerData
                         });
                 
+                        console.log(response.data);
+                
                         if (response.data && response.data.status && response.data.status.trim() === 'success') {
                             Swal.fire({
                                 icon: 'success',
@@ -210,6 +204,9 @@ const StudyPlan = () => {
             });
         };
         
+        
+
+
     if (!planDetails) {
         return <p className="text-center">Loading...</p>;
     }
@@ -271,12 +268,11 @@ const StudyPlan = () => {
                                         <Edit size={16} /> แก้ไข Summer
                                     </button>
                                     <button 
-                                        onClick={() => handleDelete(planid, group.group_name)}
+                                        onClick={() => handleDelete(planid)}
                                         className="bg-red-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-red-600 cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2"
                                     >
                                         <Trash2 size={16} /> ลบ
                                     </button>
-
                                     </div>
                                 </td>
                                 </tr>

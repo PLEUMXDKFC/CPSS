@@ -1,4 +1,7 @@
-import { Routes, Route } from 'react-router-dom';
+import Createstudyplan from './Page/Createstudyplan'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import Intogroupinfo from './Page/Intogroupinfo'
+import Groupinfo from './Page/Groupinfo'
 
 import Test from './Page/Test';
 import LoginPage from './Page/LoginPage';
@@ -18,25 +21,14 @@ import Intomohou from './Page/Intomohou';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Test />} />
-      <Route path="/Createstudyplan" element={<Createstudyplan />} />
-      <Route path="/LoginPage" element={<LoginPage />} />
-      <Route path="/Groupinfo/:planid" element={<Groupinfo />} />
-      <Route path="/study-plan/:planid" element={<StudyPlan />} />
-      <Route path="/plan/:infoid" element={<Plan />} />
-      <Route path="/add-subject" element={<Plansubject />} />
-      <Route path="/intogroupinfo" element={<Intogroupinfo />} />
-      <Route path="/intoplan" element={<Intoplan />} />
-      <Route path="/intoprintplan" element={<Intoprintplan />} />
-      <Route path="/printplan" element={<Printplan />} />
-      <Route path="/Courseinfo" element={<Courseinfo />} />
-      <Route path="/Courseinfo/:planid" element={<Courseinfo />} />
-      <Route path="/Courseadd" element={<Courseadd />} />
-      <Route path="/Intomohou" element={<Intomohou />} />
-      <Route path="/Redirectmohou/:planid" element={<Redirectmohou />} />
-    </Routes>
-  );
+    <Router>
+      <Routes>
+        <Route path="/" element={<Createstudyplan />} />
+        <Route path="/Intogroupinfo" element={<Intogroupinfo />} />
+        <Route path="/Groupinfo/:planid" element={<Groupinfo />} />
+      </Routes>
+    </Router>
+  )
 }
 
 export default App;

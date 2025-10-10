@@ -13,7 +13,6 @@ function Groupinfoform({ fetchData }) {
   const [summer, setSummer] = useState("");
   // summerYear เป็น array สำหรับเก็บค่า input แต่ละช่องใน loop
   const [summerYear, setSummerYear] = useState([]);
-  const [groupName, setGroup] = useState("");
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
   
   // ใช้ useSearchParams เพื่อดึง query parameters
@@ -23,6 +22,7 @@ function Groupinfoform({ fetchData }) {
   const course = searchParams.get("course");
   const year = searchParams.get("year");
   const studentId = searchParams.get("student_id");
+  const group = searchParams.get("group");
 
   // ใช้ useLocation เพื่อดึง state ที่ส่งมาจาก navigate
   const location = useLocation();
@@ -73,6 +73,7 @@ const generateSubterms = (term) => {
     setSummerYear(updated);
   };
 
+  // ฟังก์ชัน submit เพื่อสร้าง record แยกเป็น 2 กลุ่ม
   const Submit = async (e) => {
     e.preventDefault();
 
@@ -80,93 +81,123 @@ const generateSubterms = (term) => {
     const planidVal = planidFromURL; // ได้มาจาก URL
     const termVal = parseInt(term, 10); // term จาก form (เช่น 6)
     const formYear = Number(year);      // ปีเริ่มต้น (เช่น 2568)
+    const groupName = group;            // ใช้เป็น group_name
+    const subterm = group;              // ตัวอย่างใช้ group เป็น subterm (หรือประมวลผลเพิ่มเติมได้)
     const subtermArray = generateSubterms(termVal); // สร้าง subterm array
 
+
     // === 1. สร้าง record จาก loop (Non-summer) ===
+    // จำนวน loop คำนวณจาก term (เช่น term 6 → loopCount = 3)
     const loopCount = termVal / 2;
     const loopRecords = [];
     for (let i = 0; i < loopCount; i++) {
-        let sublevel = null;
-        if (course === "หลักสูตรประกาศณียบัตรวิชาชีพ") {
-            sublevel = `ปวช.${i + 1}`;
-        } else if (course === "หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง") {
-            sublevel = `ปวส.${i + 1}`;
-        } else if (course === "หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง (ม.6)") {
-            sublevel = `ปวส.${i + 1} ม.6`;
-        }
-        
-        const subterm = subtermArray[i]; // get the subterm from subtermArray
-        loopRecords.push({
-            planid: planidVal,
-            sublevel: sublevel,
-            group_name: groupName,
-            term: termVal,
-            subterm: subterm, // use the subterm here
-            summer: null,
-            year: formYear + i,
-        });
+      let sublevel = null;
+      // กำหนด sublevel ตามเงื่อนไข course
+      if (course === "หลักสูตรประกาศณียบัตรวิชาชีพ") {
+        sublevel = `ปวช.${i + 1}`;
+      } else if (course === "หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง") {
+        sublevel = `ปวส.${i + 1}`;
+      } else if (course === "หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง ม.6") {
+        sublevel = `ปวส.${i + 1} ม.6`;
+      }
+      loopRecords.push({
+        planid: planidVal,
+        sublevel: sublevel,          // เช่น ปวช.1, ปวช.2, ปวช.3
+        group_name: groupName,
+        term: termVal,
+        subterm: subtermArray[i],
+        summer: null,                // สำหรับ record loop จะไม่บันทึก summer
+        year: formYear + i,          // ปีเพิ่มขึ้นทีละ 1
+      });
     }
 
     // === 2. สร้าง record สำหรับข้อมูลจาก form (Summer) ===
+    // เนื่องจาก form summer มีหลายค่า (input หลักและ input เสริม) เราจะสร้าง record แยกสำหรับแต่ละค่า
     const summerRecords = [];
+    // Record สำหรับ input หลัก (ปีภาคเรียนฤดูร้อน 1)
     if (summer) {
-        summerRecords.push({
-            planid: planidVal,
-            sublevel: null,
-            group_name: groupName,
-            term: termVal,
-            subterm: subtermArray[0], // Use subterm from the array for summer
-            summer: parseInt(summer, 10),
-            year: parseInt(summer, 10),
-        });
+      summerRecords.push({
+        planid: planidVal,
+        sublevel: null,          // ไม่มี sublevel สำหรับ summer record
+        group_name: groupName,
+        term: termVal,
+        subterm: subterm,
+        summer: parseInt(summer, 10),
+        year: parseInt(summer, 10),
+      });
     }
-    summerYear.forEach((sy, index) => {
-        if (sy) {
-            summerRecords.push({
-                planid: planidVal,
-                sublevel: null,
-                group_name: groupName,
-                term: termVal,
-                subterm: subtermArray[index], // Ensure subterm is correctly indexed
-                summer: parseInt(sy, 10),
-                year: parseInt(sy, 10),
-            });
-        }
+    // Record สำหรับ input เสริม (ปีภาคเรียนฤดูร้อน 2, 3, ...)
+    summerYear.forEach((sy) => {
+      if (sy) {
+        summerRecords.push({
+          planid: planidVal,
+          sublevel: null,
+          group_name: groupName,
+          term: termVal,
+          subterm: subterm,
+          summer: parseInt(sy, 10),
+          year: parseInt(sy, 10)
+        });
+      }
     });
 
+    // รวม record ทั้งหมดที่จะส่งไปบันทึก
     const records = [...loopRecords, ...summerRecords];
+    console.log("Records to save:", records);
 
+    // ส่งข้อมูลไปยัง API เพื่อลงฐานข้อมูล
     try {
         const response = await axios.post(`${API_BASE_URL}/server/api/POST/Insert_groupinfo.php`, { 
             planid: planidVal,
             records: records 
         });
-        
+    
+        console.log("Response data:", response.data); // log ข้อมูลทั้งหมด
+    
+        // ใช้ console.log เพื่อตรวจสอบค่า message
+        console.log("Message received:", response.data.message);
+    
         if (response.data.message.trim() === "บันทึกข้อมูลเรียบร้อยแล้ว") {
-            Swal.fire({
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+            Toast.fire({
                 icon: "success",
                 title: "ข้อมูลถูกบันทึกสำเร็จ!"
             });
-
-            handleCancel();
+    
+            // เรียกใช้ฟังก์ชัน fetchData เพื่อดึงข้อมูลใหม่หลังบันทึกสำเร็จ
+            handleCancel(); // รีเซ็ตฟอร์ม
             fetchData();
-        } else {
+        }
+        else {
+            console.error('Error: Message mismatch', response.data);
             Swal.fire({
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาด!',
                 text: 'ไม่สามารถบันทึกข้อมูลได้ โปรดลองใหม่อีกครั้ง.',
+                confirmButtonText: 'ตกลง'
             });
         }
     } catch (error) {
+        // หากเกิดข้อผิดพลาดแสดง SweetAlert
         console.error('Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'เกิดข้อผิดพลาด!',
             text: 'ไม่สามารถบันทึกข้อมูลได้ โปรดลองใหม่อีกครั้ง.',
+            confirmButtonText: 'ตกลง'
         });
     }
-};
-
+  };
   
 
     // const Submit = async (e) =>{
@@ -240,42 +271,13 @@ const generateSubterms = (term) => {
             <form onSubmit={Submit} className='flex flex-col gap-4 p-4 w-full'>
                 <div className='flex flex-row gap-20 items-center justify-center'>
                     <div className='flex flex-row gap-20'>
-                            <div className='flex flex-col gap-2'>
-                            <h1 className='text-[20px]'>กลุ่ม</h1>
-                            <select
-                              className='p-1 h-auto border rounded-lg'
-                              value={groupName}
-                              onChange={(e) => setGroup(e.target.value)}
-                              required
-                          >
-                              <option value="" disabled>กลุ่ม</option>
-                              <option value="1">1</option>
-                              <option value="1-2">1-2</option>
-                              <option value="3">3</option>
-                              <option value="3-4">3-4</option>
-                              <option value="5">5</option>
-                              <option value="5-6">5-6</option>
-                          </select>
-                        </div>
                         <div className='flex flex-col gap-2'>
                             <h1 className='text-[20px]'>เทอม</h1>
-                            <input 
-                                className='p-1 h-auto border rounded-lg' 
-                                placeholder='เทอม'
-                                type="text"  // ใช้เป็น text เพื่อควบคุมการกรอก
-                                value={term}
-                                onChange={(e) => {
-                                    // ตรวจสอบว่าค่าที่กรอกเป็นตัวเลข และมีความยาวไม่เกิน 1 ตัว
-                                    const value = e.target.value;
-                                    if (/^\d$/.test(value) || value === '') {  // อนุญาตแค่ตัวเลข 0-9
-                                        setTerm(value);
-                                    }
-                                }}
-                                maxLength={1}  // จำกัดความยาวเป็น 1 ตัว
-                                required
-                            />
+                            <input className='p-1 h-auto border rounded-lg' placeholder='เทอม'
+                            value={term}
+                            onChange={(e) => setTerm(e.target.value)}
+                            maxLength={1}></input>
                         </div>
-
                         <div className='flex flex-col gap-2'>
                             <h1 className="text-[20px]">ภาคเรียนฤดูร้อน</h1>
                             <input
