@@ -3,8 +3,23 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Intogroupinfo from './Page/Intogroupinfo'
 import Groupinfo from './Page/Groupinfo'
 
-function App() {
+import Test from './Page/Test';
+import LoginPage from './Page/LoginPage';
+import Createstudyplan from './Page/Createstudyplan';
+import Groupinfo from './Page/Groupinfo';
+import StudyPlan from './Page/study-plan';
+import Plan from './Page/plan';
+import Plansubject from './Page/add-subject';
+import Intogroupinfo from './Page/Intogroupinfo';
+import Intoplan from './Page/Intoplan';
+import Intoprintplan from './Page/intoprintplan';
+import Printplan from './Page/printplan';
+import Courseinfo from './Page/Courseinfo';
+import Courseadd from './Page/Courseadd';
+import Redirectmohou from './Page/Redirectmohou';
+import Intomohou from './Page/Intomohou';
 
+function App() {
   return (
     <Router>
       <Routes>
@@ -16,4 +31,4 @@ function App() {
   )
 }
 
-export default App
+export default App;

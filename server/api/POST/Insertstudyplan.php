@@ -10,12 +10,11 @@ try {
         exit;  // exit หลังจากส่งค่าแล้ว เพื่อไม่ให้ส่งค่าซ้ำ
     }
 
-    if (isset($data['course'], $data['year'], $data['student_id'], $data['group'])) {
-        $stmt = $conn->prepare("INSERT INTO study_plans (course, year, student_id, `group`) VALUES (:course, :year, :student_id, :group)");
+    if (isset($data['course'], $data['year'], $data['student_id'])) {
+        $stmt = $conn->prepare("INSERT INTO study_plans (course, year, student_id) VALUES (:course, :year, :student_id)");
         $stmt->bindParam(":course", $data['course']);
         $stmt->bindParam(":year", $data['year']);
         $stmt->bindParam(":student_id", $data['student_id']);
-        $stmt->bindParam(":group", $data['group']);
 
         if ($stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "Data inserted successfully"]);

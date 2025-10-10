@@ -11,13 +11,12 @@
             exit;
         }
 
-        if (isset($data['planid'], $data['course'], $data['year'], $data['student_id'], $data['group'])) {
-            $stmt = $conn->prepare("UPDATE study_plans SET course = :course, year = :year, student_id = :student_id, `group` = :group WHERE planid = :planid");
+        if (isset($data['planid'], $data['course'], $data['year'], $data['student_id'])) {
+            $stmt = $conn->prepare("UPDATE study_plans SET course = :course, year = :year, student_id = :student_id  WHERE planid = :planid");
             $stmt->bindParam(":planid", $data['planid']);
             $stmt->bindParam(":course", $data['course']);
             $stmt->bindParam(":year", $data['year']);
             $stmt->bindParam(":student_id", $data['student_id']);
-            $stmt->bindParam(":group", $data['group']);
 
             if ($stmt->execute()) {
                 echo json_encode(["status" => "success", "message" => "Data updated successfully"]);
