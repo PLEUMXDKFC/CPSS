@@ -95,7 +95,12 @@ const StudyPlans = () => {
 
                 <h2 className="text-center text-3xl font-bold mb-6">สร้างแผนการเรียน</h2>
 
-                {plans.map(({ level, groups }) => (
+              {plans.length === 0 ? (
+                <div className="text-center text-gray-600 mt-10">
+                    <p className="text-lg">ยังไม่มีกลุ่มการเรียนในแผนการเรียนนี้</p>
+                </div>
+            ) : (
+                plans.map(({ level, groups }) => (
                     <div key={level} className="mb-10">
                         <h3 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-1">{level}</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -120,7 +125,8 @@ const StudyPlans = () => {
                             ))}
                         </div>
                     </div>
-                ))}
+                ))
+            )}
             </div>
         </div>
     );

@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { FaUser, FaLock } from "react-icons/fa";
+import { HiMenu, HiX } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -10,10 +13,10 @@ const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // ตรวจสอบ flag ว่าผู้ใช้เคยเลือก "จดจำฉัน" ไว้หรือไม่
     const savedRememberMe = localStorage.getItem("rememberMe") === "true";
     if (savedRememberMe) {
       const savedUsername = localStorage.getItem("savedUsername");
@@ -25,13 +28,11 @@ const LoginPage = () => {
         handleAutoLogin(savedUsername, savedPassword);
       }
     } else {
-      // ลบข้อมูลเก่าที่อาจถูกเก็บไว้
       localStorage.removeItem("savedUsername");
       localStorage.removeItem("savedPassword");
     }
   }, []);
-  
-  
+
   const handleAutoLogin = async (savedUsername, savedPassword) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/server/api/POST/login.php`, {
@@ -70,21 +71,28 @@ const LoginPage = () => {
         if (rememberMe) {
           localStorage.setItem("savedUsername", username);
           localStorage.setItem("savedPassword", password);
-          localStorage.setItem("rememberMe", "true"); // บันทึก flag ว่าผู้ใช้เลือกจดจำฉัน
+          localStorage.setItem("rememberMe", "true");
         } else {
           localStorage.removeItem("savedUsername");
           localStorage.removeItem("savedPassword");
           localStorage.removeItem("rememberMe");
-        }        
-        
+        }
 
         setTimeout(() => navigate("/Createstudyplan"), 1500);
       } else {
-        Swal.fire({ title: "เข้าสู่ระบบล้มเหลว", text: response.data.message || "เกิดข้อผิดพลาด", icon: "error" });
+        Swal.fire({
+          title: "เข้าสู่ระบบล้มเหลว",
+          text: response.data.message || "เกิดข้อผิดพลาด",
+          icon: "error",
+        });
       }
     } catch (err) {
       console.error("Login Error:", err);
-      Swal.fire({ title: "เกิดข้อผิดพลาด", text: "ไม่สามารถเชื่อมต่อ API ได้", icon: "error" });
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถเชื่อมต่อ API ได้",
+        icon: "error",
+      });
     }
   };
 
@@ -130,37 +138,70 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <nav className="fixed top-0 w-full bg-white shadow-md p-4 flex justify-between items-center z-50">
-        <div className="flex items-center">
-          <img className="h-12" src={Logo} alt="CTN PHRAE" />
-          <span className="ml-2 text-xl font-semibold text-gray-700">CTN PHRAE</span>
-        </div>
-        <div>
-          <ul className="flex space-x-6">
-            <li><a href="/" className="text-gray-600 hover:text-blue-500">HOME</a></li>
-            <li><a href="/LoginPage" className="text-gray-600 hover:text-blue-500">SIGN IN</a></li>
+      <nav className="fixed top-0 w-full bg-white shadow-md z-50">
+        <div className="flex justify-between items-center p-4">
+          <div className="flex items-center gap-3">
+            <img className="h-10" src={Logo} alt="Logo" />
+            <span className="text-xl font-bold">CTN PHRAE</span>
+          </div>
+
+          <div className="md:hidden">
+            <button onClick={() => setMenuOpen(!menuOpen)}>
+              {menuOpen ? <HiX size={30} /> : <HiMenu size={30} />}
+            </button>
+          </div>
+
+          <ul className="hidden md:flex gap-6 text-lg">
+            <li><Link to="/" className="hover:text-blue-600">หน้าหลัก</Link></li>
+            <li><Link to="/intoviewplan" className="hover:text-blue-600">แผนการเรียน</Link></li>
+            <li><Link to="/LoginPage" className="text-blue-600 hover:text-blue-600">เข้าสู่ระบบ</Link></li>
           </ul>
         </div>
+
+        {menuOpen && (
+          <div className="md:hidden bg-white px-4 pb-4 shadow">
+            <ul className="flex flex-col gap-4 text-lg">
+              <li><Link to="/" onClick={() => setMenuOpen(false)}>หน้าหลัก</Link></li>
+              <li><Link to="/intoviewplan" onClick={() => setMenuOpen(false)}>แผนการเรียน</Link></li>
+              <li><Link to="/LoginPage" onClick={() => setMenuOpen(false)}>เข้าสู่ระบบ</Link></li>
+            </ul>
+          </div>
+        )}
       </nav>
 
-      <div className="bg-white p-8 rounded-lg shadow-lg w-96 mt-10">
-        <h2 className="text-2xl font-bold text-center text-gray-700">Sign in</h2>
+      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-sm mt-24 mx-4 sm:mx-0">
+        <h2 className="text-2xl font-bold text-center text-gray-700">เข้าสู่ระบบ</h2>
         <form className="mt-4" onSubmit={handleSubmit}>
-          <input
-            className="w-full p-3 border rounded mt-3 focus:ring focus:ring-blue-300"
-            placeholder="Username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            className="w-full p-3 border rounded mt-3 focus:ring focus:ring-blue-300"
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <div className="flex justify-between items-center mt-3">
+          <div className="relative w-full mt-3">
+            <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <input
+              className="w-full pl-10 p-3 border rounded focus:ring focus:ring-blue-300"
+              placeholder="ชื่อผู้ใช้"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  document.getElementById("password-input")?.focus();
+                }
+              }}
+            />
+          </div>
+
+          <div className="relative w-full mt-3">
+            <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <input
+              id="password-input"
+              className="w-full pl-10 p-3 border rounded focus:ring focus:ring-blue-300"
+              placeholder="รหัสผ่าน"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          <div className="flex justify-between items-center mt-3 flex-wrap gap-y-2">
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -170,17 +211,20 @@ const LoginPage = () => {
               />
               <label className="text-gray-600">จดจำฉัน</label>
             </div>
-            <button type="button" className="text-blue-500 hover:underline" onClick={handleForgotPassword}>
+            <button type="button" className="text-blue-500 hover:underline text-sm" onClick={handleForgotPassword}>
               ลืมรหัสผ่าน?
             </button>
           </div>
-          <button className="w-full bg-blue-500 text-white py-2 mt-4 rounded hover:bg-blue-600 transition" type="submit">
-            Confirm!
+
+          <button
+            className="w-full bg-blue-500 text-white py-2 mt-4 rounded hover:bg-blue-600 transition"
+            type="submit"
+          >
+            ยืนยัน
           </button>
         </form>
       </div>
     </div>
-    
   );
 };
 

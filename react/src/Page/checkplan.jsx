@@ -12,11 +12,11 @@ function CheckplanPage() {
     return <div>ไม่พบ planid ใน URL</div>;
   }
 
-  if (course === 'หลักสูตรประกาศณียบัตรวิชาชีพ') {
+  if (course === 'หลักสูตรประกาศนียบัตรวิชาชีพ') {
     return <Checkplan planid={planid} />;
-  } else if (course === 'หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง') {
+  } else if (course === 'หลักสูตรประกาศนียบัตรวิชาชีพขั้นสูง') {
     return <CheckplanPVS planid={planid} />;
-  } else if (course === 'หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง (ม.6)') {
+  } else if (course === 'หลักสูตรประกาศนียบัตรวิชาชีพขั้นสูง (ม.6)') {
     return <CheckplanPVSS planid={planid} />;
   } else {
     return (

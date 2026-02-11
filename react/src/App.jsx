@@ -18,6 +18,8 @@ import Intomohou from './Page/Intomohou';
 import Makeplan from './Page/makeplan';
 import Intocheckplan from './Page/intocheckplan';
 import Checkplan from './Page/checkplan';
+import Intoviewplan from './Page/intoviewplan';
+import Viewplan from './Page/view-plan';
 
 function App() {
   return (
@@ -41,6 +43,8 @@ function App() {
       <Route path="/makeplan" element={<Makeplan />} />
       <Route path="/intocheckplan" element={<Intocheckplan />} />
       <Route path="/checkplan" element={<Checkplan />} />
+      <Route path="/intoviewplan" element={<Intoviewplan />} />
+      <Route path="/view-plan" element={<Viewplan />} />
     </Routes>
   );
 }

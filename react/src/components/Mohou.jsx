@@ -215,7 +215,7 @@ function Mohou() {
                     <ArrowLeft size={20} />
                     <span className="font-medium">ย้อนกลับ</span>
                 </button>
-                <h1 className="text-2xl font-bold text-center mb-6">ดูโครงสร้างแผนการเรียน</h1>
+                <h1 className="text-2xl font-bold text-center mb-6">ดูแบบสรุปโครงสร้างหลักสูตร</h1>
 
                 <div ref={printRef} className="print-area">
                 {/* ข้อความเพิ่มเติม */}

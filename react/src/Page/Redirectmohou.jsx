@@ -9,11 +9,11 @@ function Redirectmohou() {
     const course = searchParams.get('course');
 
   // ตรวจสอบค่า course แล้ว render component ที่ต้องการ
-  if (course === 'หลักสูตรประกาศณียบัตรวิชาชีพ') {
+  if (course === 'หลักสูตรประกาศนียบัตรวิชาชีพ') {
     return <Mohou />;
-  } else if (course === 'หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง') {
+  } else if (course === 'หลักสูตรประกาศนียบัตรวิชาชีพขั้นสูง') {
     return <MohouPVS />;
-  } else if (course === 'หลักสูตรประกาศณียบัตรวิชาชีพขั้นสูง (ม.6)') {
+  } else if (course === 'หลักสูตรประกาศนียบัตรวิชาชีพขั้นสูง (ม.6)') {
     return <MohouPVSS />;
   } else {
     return (
