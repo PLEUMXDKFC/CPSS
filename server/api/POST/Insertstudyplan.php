@@ -5,6 +5,7 @@ header("Content-Type: application/json; charset=UTF-8");
 try {
     $data = json_decode(file_get_contents('php://input'), true);
 
+
     if (!$conn) {
         echo json_encode(["status" => "error", "message" => "Database connection failed"]);
         exit;  // exit หลังจากส่งค่าแล้ว เพื่อไม่ให้ส่งค่าซ้ำ
