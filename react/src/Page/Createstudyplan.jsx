@@ -259,6 +259,24 @@ function Createstudyplan() {
                                 </select>
                             </div>
 
+                    <form onSubmit={handleSubmit}>
+                        <div className="grid grid-cols-3 md:grid-cols-3 gap-2">
+                            <div>
+                                <label htmlFor="course" className="block font-medium">หลักสูตร</label>
+                                <select
+                                    name="course"
+                                    value={course}
+                                    onChange={(e) => setCourse(e.target.value)}
+                                    className="border-2 border-gray-700 rounded-lg w-full p-2"
+                                    required
+                                >
+                                    <option value="" disabled>เลือกหลักสูตร</option>
+                                    <option value="หลักสูตรประกาศนียบัตรวิชาชีพ">หลักสูตรประกาศนียบัตรวิชาชีพ</option>
+                                    <option value="หลักสูตรประกาศนียบัตรวิชาชีพขั้นสูง">หลักสูตรประกาศนียบัตรวิชาชีพขั้นสูง</option>
+                                    <option value="หลักสูตรประกาศนียบัตรวิชาชีพขั้นสูง (ม.6)">หลักสูตรประกาศนียบัตรวิชาชีพขั้นสูง (ม.6)</option>
+                                </select>
+                            </div>
+
                             <div>
                                 <label htmlFor="year" className="block font-medium">พุทธศักราช</label>
                                 <input
