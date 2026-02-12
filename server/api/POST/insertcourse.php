@@ -29,7 +29,7 @@ try {
     // เริ่ม Transaction
     $conn->beginTransaction();
 
-    $stmt = $conn->prepare("INSERT INTO course_information (infoid, subject_id, year, term) VALUES (:infoid, :subject_id, :year, :term)");
+    $stmt = $conn->prepare("INSERT INTO course_information (planid, infoid, subject_id, year, term) VALUES (:planid, :infoid, :subject_id, :year, :term)");
 
     $insertCount = 0;
     foreach ($subjects as $subject_id) {
@@ -37,7 +37,8 @@ try {
             ":infoid" => $infoid,
             ":subject_id" => $subject_id,
             ":year" => $year,
-            ":term" => $term
+            ":term" => $term,
+            ":planid" => $planid
         ]);
         $insertCount++;
     }

@@ -28,20 +28,17 @@ const StudyPlan = () => {
 
     const fetchData = async () => {
         try {
-          const response = await axios.get(
-            `${API_BASE_URL}/server/api/GET/Get_group_information.php?planid=${planid}`
-          );
-          setGroupData(response.data);
+            const response = await axios.get(
+                `${API_BASE_URL}/server/api/GET/Getgroupforgroup.php?planid=${planid}`
+            );
+            setGroupData(response.data);
         } catch (error) {
-          console.error("Error fetching group information:", error);
+            console.error("Error fetching group information:", error);
         }
-      };
+    };
+    
             
         const sublevelGroups = groupData.filter(group => group.sublevel !== null);
-        const summerGroups = groupData.filter(group => group.sublevel === null && group.summer !== null);
-
-        // รวมค่า summer จาก summerGroups เป็น string ด้วย " / "
-        const summerString = summerGroups.map(item => item.summer).join(" / ");
 
         const handleEdit = (planid) => {
             Swal.fire({
@@ -76,8 +73,7 @@ const StudyPlan = () => {
         };
 
 
-        // ตัวอย่าง handleDelete ที่ส่ง planid ไปยัง API สำหรับลบ
-        const handleDelete = async (planid) => {
+        const handleDelete = async (planid, groupName) => {
             const result = await Swal.fire({
                 title: 'คุณแน่ใจหรือไม่?',
                 text: "คุณต้องการลบแผนการเรียนนี้หรือไม่?",
@@ -91,9 +87,15 @@ const StudyPlan = () => {
         
             if (result.isConfirmed) {
                 try {
-                    const response = await axios.post(`${API_BASE_URL}/server/api/DELETE/Delete_group_information.php?planid=${planid}`);
-                    console.log(response);
-                    fetchData(); // เรียกใช้ฟังก์ชัน fetchData เพื่อนำข้อมูลใหม่
+                    const response = await axios.get(`${API_BASE_URL}/server/api/DELETE/Delete_group_information.php`, {
+                        params: {
+                            planid: planid,
+                            group_name: groupName,
+                        }
+                    });
+                    console.log(response.data);
+                    fetchData(); // โหลดข้อมูลใหม่หลังลบ
+        
                     Swal.fire({
                         icon: "success",
                         title: "ลบข้อมูลสำเร็จ!",
@@ -106,7 +108,9 @@ const StudyPlan = () => {
                 }
             }
         };
-
+        
+        
+        
 
         const fetchSummerData = async (planid) => {
             try {
@@ -171,8 +175,6 @@ const StudyPlan = () => {
                             summerData: updatedSummerData
                         });
                 
-                        console.log(response.data);
-                
                         if (response.data && response.data.status && response.data.status.trim() === 'success') {
                             Swal.fire({
                                 icon: 'success',
@@ -204,9 +206,6 @@ const StudyPlan = () => {
             });
         };
         
-        
-
-
     if (!planDetails) {
         return <p className="text-center">Loading...</p>;
     }
@@ -244,47 +243,55 @@ const StudyPlan = () => {
                                 <th className="border border-gray-300 p-2">รหัส</th>
                                 <th className="border border-gray-300 p-2">ระดับชั้น</th>
                                 <th className="border border-gray-300 p-2">กลุ่ม</th>
-                                <th className="border border-gray-300 p-2">เทอม</th>
-                                <th className="border border-gray-300 p-2">ปีภาคเรียนฤดูร้อน</th>
+                                <th className="border border-gray-300 p-2">จำนวนภาคเรียนปกติ</th>
+                                <th className="border border-gray-300 p-2">ปีการศึกษาภาคเรียนฤดูร้อน</th>
                                 <th className="border border-gray-300 p-2">จัดการ</th>
                             </tr>
                         </thead>
                         <tbody>
                         {sublevelGroups.length > 0 ? (
-                            sublevelGroups.map((group, index) => (
-                                <tr key={index} className="text-center">
-                                <td className="border border-gray-300 p-2">{planDetails.student_id}</td>
-                                <td className="border border-gray-300 p-2">{group.sublevel}</td>
-                                <td className="border border-gray-300 p-2">{group.group_name}</td>
-                                <td className="border border-gray-300 p-2">{group.term}</td>
-                                {/* ใช้ summerString ที่คำนวณไว้ */}
-                                <td className="border border-gray-300 p-2">{summerString}</td>
-                                <td className="border border-gray-300 p-2 text-center">
-                                    <div className="flex space-x-1 justify-center">
-                                    <button 
-                                        onClick={() => fetchSummerData(group.planid)} // เรียกใช้ฟังก์ชันดึงข้อมูล
-                                        className="bg-blue-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-blue-600 cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2"
-                                    >
-                                        <Edit size={16} /> แก้ไข Summer
-                                    </button>
-                                    <button 
-                                        onClick={() => handleDelete(planid)}
-                                        className="bg-red-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-red-600 cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2"
-                                    >
-                                        <Trash2 size={16} /> ลบ
-                                    </button>
-                                    </div>
-                                </td>
-                                </tr>
-                            ))
-                            ) : (
+                            sublevelGroups.map((group, index) => {
+                                // หา summer ที่ตรงกับ group นี้
+                                const summerRecord = groupData.find(
+                                    item => item.summer !== null && 
+                                    item.year === group.year && 
+                                    (!item.sublevel || item.sublevel === group.sublevel)
+                                );
+            
+                                return (
+                                    <tr key={index} className="text-center">
+                                        <td className="border border-gray-300 p-2">{planDetails.student_id}</td>
+                                        <td className="border border-gray-300 p-2">{group.sublevel}</td>
+                                        <td className="border border-gray-300 p-2">{group.group_name}</td>
+                                        <td className="border border-gray-300 p-2">{group.term}</td>
+                                        <td className="border border-gray-300 p-2">{summerRecord?.summer || "-"}</td>
+                                        <td className="border border-gray-300 p-2 text-center">
+                                            <div className="flex space-x-1 justify-center">
+                                                <button 
+                                                    onClick={() => fetchSummerData(group.planid)}
+                                                    className="bg-blue-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-blue-600 cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2"
+                                                >
+                                                    <Edit size={16} /> แก้ไข Summer
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDelete(planid, group.group_name)}
+                                                    className="bg-red-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-red-600 cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2"
+                                                >
+                                                    <Trash2 size={16} /> ลบ
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        ) : (
                             <tr>
                                 <td colSpan="7" className="text-center p-4 text-gray-500">
-                                ไม่มีข้อมูลกลุ่มการเรียน
+                                    ไม่มีข้อมูลกลุ่มการเรียน
                                 </td>
                             </tr>
-                            )}
-                        </tbody>
+                        )}
+                    </tbody>
                     </table>
                 </div>
             </div>
