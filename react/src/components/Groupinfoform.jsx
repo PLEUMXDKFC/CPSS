@@ -256,6 +256,62 @@ function Groupinfoform({ fetchData }) {
     //     }
     // }
 
+
+    return (
+        <>
+            <div className='flex items-center justify-center border border-gray-400 bg-gray-100 mb-6 mt-10 rounded-lg'>
+                <form onSubmit={Submit} className='flex flex-col gap-4 p-4 w-full'>
+                    <div className='flex flex-row gap-20 items-center justify-center'>
+                        <div className='flex flex-row gap-20'>
+                            <div className='flex flex-col gap-2'>
+                                <h1 className='text-[20px]'>กลุ่ม</h1>
+                                <select
+                                    className='p-1 h-auto border rounded-lg'
+                                    value={groupName}
+                                    onChange={(e) => setGroup(e.target.value)}
+                                    required
+                                >
+                                    <option value="" disabled>กลุ่ม</option>
+                                    <option value="1">1</option>
+                                    <option value="1-2">1-2</option>
+                                    <option value="3">3</option>
+                                    <option value="3-4">3-4</option>
+                                    <option value="5">5</option>
+                                    <option value="5-6">5-6</option>
+                                </select>
+                            </div>
+                            <div className='flex flex-col gap-2'>
+                                <h1 className='text-[20px]'>จำนวนภาคเรียนปกติ</h1>
+                                <input
+                                    className='p-1 h-auto border rounded-lg'
+                                    placeholder='กรอกจำนวนภาคเรียนปกติ'
+                                    type="text"  // ใช้เป็น text เพื่อควบคุมการกรอก
+                                    value={term}
+                                    onChange={(e) => {
+                                        // ตรวจสอบว่าค่าที่กรอกเป็นตัวเลข และมีความยาวไม่เกิน 1 ตัว
+                                        const value = e.target.value;
+                                        if (/^\d$/.test(value) || value === '') {  // อนุญาตแค่ตัวเลข 0-9
+                                            setTerm(value);
+                                        }
+                                    }}
+                                    maxLength={1}  // จำกัดความยาวเป็น 1 ตัว
+                                    required
+                                />
+                            </div>
+
+                            <div className='flex flex-col gap-2'>
+                                <h1 className="text-[20px]">จำนวนภาคเรียนฤดูร้อน</h1>
+                                <input
+                                    type="number"
+                                    className="p-1 h-auto w-52 border rounded-lg"
+                                    placeholder="กรอกจำนวนภาคเรียนฤดูร้อน"
+                                    value={summerTerm}
+                                    onChange={handleSummerTermChange} // ฟังก์ชันนี้จะทำงานเมื่อผู้ใช้พิมพ์
+                                />
+                            </div>
+
+                            {/* ส่วน input สำหรับ summer และ summerYear */}
+
                             <div className="flex flex-col gap-2 items-center">
                                 <h1 className="text-[20px]">ปีการศึกษาภาคเรียนฤดูร้อน</h1>
                                 <input
