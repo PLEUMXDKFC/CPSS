@@ -18,6 +18,19 @@ try {
 
     // ตรวจสอบว่าข้อมูลที่จำเป็นถูกส่งมาครบถ้วนหรือไม่
     if (isset($data['course_code'], $data['course_name'], $data['theory'], $data['comply'], $data['credit'], $data['subject_category'], $data['planid'], $data['subject_groups'])) {
+        
+        // ตรวจสอบว่ามีชื่อวิชาซ้ำในหลักสูตรเดียวกันหรือไม่
+        $checkStmt = $conn->prepare("SELECT COUNT(*) FROM subject WHERE course_name = :course_name AND planid = :planid");
+        $checkStmt->bindParam(":course_name", $data['course_name']);
+        $checkStmt->bindParam(":planid", $data['planid']);
+        $checkStmt->execute();
+        
+        if ($checkStmt->fetchColumn() > 0) {
+            http_response_code(409); // Conflict
+            echo json_encode(["status" => "error", "message" => "ชื่อวิชาซ้ำกันในหลักสูตรนี่้"]);
+            exit;
+        }
+
         // เตรียมคำสั่ง SQL สำหรับเพิ่มข้อมูล
         $stmt = $conn->prepare("INSERT INTO subject (course_code, course_name, theory, comply, credit, subject_category, planid, subject_groups) VALUES (:course_code, :course_name, :theory, :comply, :credit, :subject_category, :planid, :subject_groups)");
 

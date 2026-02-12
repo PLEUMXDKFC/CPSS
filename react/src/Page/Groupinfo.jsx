@@ -38,10 +38,6 @@ const StudyPlan = () => {
       };
             
         const sublevelGroups = groupData.filter(group => group.sublevel !== null);
-        const summerGroups = groupData.filter(group => group.sublevel === null && group.summer !== null);
-
-        // รวมค่า summer จาก summerGroups เป็น string ด้วย " / "
-        const summerString = summerGroups.map(item => item.summer).join(" / ");
 
         const handleEdit = (planid) => {
             Swal.fire({
@@ -244,8 +240,8 @@ const StudyPlan = () => {
                                 <th className="border border-gray-300 p-2">รหัส</th>
                                 <th className="border border-gray-300 p-2">ระดับชั้น</th>
                                 <th className="border border-gray-300 p-2">กลุ่ม</th>
-                                <th className="border border-gray-300 p-2">เทอม</th>
-                                <th className="border border-gray-300 p-2">ปีภาคเรียนฤดูร้อน</th>
+                                <th className="border border-gray-300 p-2">จำนวนภาคเรียนปกติ</th>
+                                <th className="border border-gray-300 p-2">ปีการศึกษาภาคเรียนฤดูร้อน</th>
                                 <th className="border border-gray-300 p-2">จัดการ</th>
                             </tr>
                         </thead>
@@ -280,11 +276,11 @@ const StudyPlan = () => {
                             ) : (
                             <tr>
                                 <td colSpan="7" className="text-center p-4 text-gray-500">
-                                ไม่มีข้อมูลกลุ่มการเรียน
+                                    ไม่มีข้อมูลกลุ่มการเรียน
                                 </td>
                             </tr>
-                            )}
-                        </tbody>
+                        )}
+                    </tbody>
                     </table>
                 </div>
             </div>

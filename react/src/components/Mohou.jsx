@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // เพิ่ม useRef
 import Sidebar from './Sidebar';
 import axios from 'axios';
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft,Printer } from "lucide-react";
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 
 function Mohou() {
@@ -24,6 +24,7 @@ function Mohou() {
 
     const [subjectData, setSubjectData] = useState([]); // เก็บข้อมูล subject ที่ดึงมา
     const [error, setError] = useState(null); // เก็บ error หากเกิดข้อผิดพลาด
+    const printRef = useRef(null);
 
     const [creditA, setCreditA] = useState(0); // เงื่อนไข A
     const [creditB, setCreditB] = useState(0); // เงื่อนไข B
@@ -164,6 +165,44 @@ function Mohou() {
         navigate(-1);
     };
     
+       // ✅ ฟังก์ชันพิมพ์เฉพาะส่วนของแผนการเรียน
+    const handlePrint = () => {
+        // เก็บ content เดิม
+        const originalContent = document.body.innerHTML;
+        
+        // แทนที่ content ด้วยส่วนที่ต้องการพิมพ์
+        const printContent = printRef.current.innerHTML;
+        document.body.innerHTML = `
+            <style>
+                /* CSS สำหรับการพิมพ์ */
+                * {
+                    color: black !important;
+                    border-color: black !important;
+                }
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                }
+                th, td {
+                    border: 1px solid black;
+                    padding: 8px;
+                    text-align: center;
+                }
+                .text-red-500,
+                .text-green-500,
+                .text-gray-700 {
+                    color: black !important;
+                }
+            </style>
+            ${printContent}
+        `;
+        
+        // พิมพ์และคืนค่า content เดิม
+        window.print();
+        document.body.innerHTML = originalContent;
+        window.location.reload();
+    };
+    
 
     return (
         <div className="flex h-screen">
@@ -176,28 +215,25 @@ function Mohou() {
                     <ArrowLeft size={20} />
                     <span className="font-medium">ย้อนกลับ</span>
                 </button>
-                <h1 className="text-2xl font-bold text-center mb-6">ดูโครงสร้างแผนการเรียน</h1>
+                <h1 className="text-2xl font-bold text-center mb-6">ดูแบบสรุปโครงสร้างหลักสูตร</h1>
 
-                {/* แสดงค่าจาก URL แทน dropdown */}
-                <div className="flex justify-center gap-4 mb-6 text-lg">
-                </div>
-
+                <div ref={printRef} className="print-area">
                 {/* ข้อความเพิ่มเติม */}
-                <div className="text-center mt-6 text-lg text-gray-700">
+                <div className="text-center mt-6 text-lg text-black-700">
                     <label className="flex justify-center">แบบสรุปโครงสร้างหลักสูตร</label>
                     <p>
-                        หลักสูตร <span className="text-red-500">{selectedCourse} </span> 
+                        <span className="text-red-500">{selectedCourse} </span> 
                         พุทธศักราช <span className="text-red-500">{selectedYear}</span> ใช้สำหรับนักศึกษา 
-                        รหัสนักศึกษา <span className="text-red-500">{selectedStudentId}</span>
+                        รหัส <span className="text-red-500">{selectedStudentId}</span>
                     </p>
                     <p>ประเภทวิชา อุตสาหกรรมดิจิทัลและเทคโนโลยีสารสนเทศ</p>
-                    <p>กลุ่มอาชีพ ฮาร์ดแวร์ สาขาวิชา ข้างเทคนิคคอมพิวเตอร์</p>
+                    <p>กลุ่มอาชีพ ฮาร์ดแวร์ สาขาวิชา ช่างเทคนิคคอมพิวเตอร์</p>
                     <p>วิทยาลัยเทคนิคแพร่</p>
                 </div>
          
                 <div className="flex flex-row mt-6">
                     {/* ข้อความเพิ่มเติมด้านซ้าย */}
-                    <div className="mt-8 text-lg text-gray-700 w-1/2">
+                    <div className="mt-8 text-lg text-black-700 w-1/2">
                         <p>หมวดวิชา</p>
                         <p><strong>1. หมวดวิชาสรรถนะแกนกลาง  (ไม่น้อยกว่า)</strong></p>
                         <p className="ml-4 mt-2">1.1. กลุ่มสมรรถนะภาษาและการสื่อสาร (ไม่น้อยกว่า)</p>
@@ -214,6 +250,7 @@ function Mohou() {
                         <p className="mt-3"><strong>4. กิจกรรมเสริมหลักสูตร</strong></p>
                     </div>
 
+
                     {/* ตาราง */}
                     <div className="w-1/2 overflow-x-auto">
                         <table className="table-auto border-collapse border border-gray-800 text-sm max-w-4xl mx-auto">
@@ -229,7 +266,7 @@ function Mohou() {
                                 {/* แถวที่ 1: เงื่อนไข A */}
 
                                 <tr>
-                                    <td className="border border-gray-800 px-4 py-2 text-center text-black">20</td>
+                                    <td className="border border-gray-800 px-4 py-2 text-center text-black font-bold">20</td>
                                     <td className="border border-gray-800 px-4 py-2 text-center text-black">หน่วยกิต</td>
                                     <th className={`border border-gray-800 px-4 py-2 text-center ${
                                         (creditA + creditB + creditC) !== 20 ? 'text-red-500' : 'text-green-500'
@@ -240,7 +277,7 @@ function Mohou() {
                                 </tr>
                                 {/* แถวที่ 2: เงื่อนไข B */}
                                 <tr>
-                                    <td className="border border-gray-800 px-4 py-2 text-center text-black">9</td>
+                                    <td className="border border-gray-800 px-4 py-2 text-center text-black font-bold">9</td>
                                     <td className="border border-gray-800 px-4 py-2 text-center text-black">หน่วยกิต</td>
                                     <th className={`border border-gray-800 px-4 py-2 text-center ${
                                         creditA !== 9 ? 'text-red-500' : 'text-green-500'
@@ -252,7 +289,7 @@ function Mohou() {
 
                                 {/* แถวที่ 2: เงื่อนไข B */}
                                 <tr>
-                                    <td className="border border-gray-800 px-4 py-2 text-center text-black">6</td>
+                                    <td className="border border-gray-800 px-4 py-2 text-center text-black font-bold">6</td>
                                     <td className="border border-gray-800 px-4 py-2 text-center text-black">หน่วยกิต</td>
                                     <th className={`border border-gray-800 px-4 py-2 text-center ${
                                         creditB !== 6 ? 'text-red-500' : 'text-green-500'
@@ -264,7 +301,7 @@ function Mohou() {
 
                                 {/* แถวที่ 3: เงื่อนไข C */}
                                 <tr>
-                                    <td className="border  border-gray-800 px-4 py-2 text-center text-black">5</td>
+                                    <td className="border  border-gray-800 px-4 py-2 text-center text-black font-bold">5</td>
                                     <td className="border  border-gray-800 px-4 py-2 text-center text-black">หน่วยกิต</td>
                                     <th className={`border  border-gray-800 px-4 py-2 text-center ${
                                         creditC !== 5 ? 'text-red-500' : 'text-green-500'
@@ -275,7 +312,7 @@ function Mohou() {
                                 </tr>
 
                                 <tr>
-                                    <td className="border border-gray-800 px-4 py-2 text-center text-black">70</td>
+                                    <td className="border border-gray-800 px-4 py-2 text-center text-black font-bold">70</td>
                                     <td className="border border-gray-800 px-4 py-2 text-center text-black">หน่วยกิต</td>
                                     <th className={`border border-gray-800 px-4 py-2 text-center ${
                                         (creditD + creditE) !== 70 ? 'text-red-500' : 'text-green-500'
@@ -286,7 +323,7 @@ function Mohou() {
                                 </tr>
                                 {/* แถวที่ 4: เงื่อนไข D */}
                                 <tr>
-                                    <td className="border  border-gray-800 px-4 py-2 text-center text-black">34</td>
+                                    <td className="border  border-gray-800 px-4 py-2 text-center text-black font-bold">34</td>
                                     <td className="border  border-gray-800 px-4 py-2 text-center text-black">หน่วยกิต</td>
                                     <th className={`border  border-gray-800 px-4 py-2 text-center ${
                                         creditD !== 34 ? 'text-red-500' : 'text-green-500'
@@ -298,7 +335,7 @@ function Mohou() {
 
                                 {/* แถวที่ 5: เงื่อนไข E */}
                                 <tr>
-                                    <td className="border  border-gray-800 px-4 py-2 text-center text-black">36</td>
+                                    <td className="border  border-gray-800 px-4 py-2 text-center text-black font-bold">36</td>
                                     <td className="border  border-gray-800 px-4 py-2 text-center text-black">หน่วยกิต</td>
                                     <th className={`border  border-gray-800 px-4 py-2 text-center ${
                                         creditE !== 36 ? 'text-red-500' : 'text-green-500'
@@ -310,7 +347,7 @@ function Mohou() {
 
                                 {/* แถวที่ 6: เงื่อนไข F */}
                                 <tr>
-                                    <td className="border border-gray-800 px-4 py-2 text-center text-black">10</td>
+                                    <td className="border border-gray-800 px-4 py-2 text-center text-black font-bold">10</td>
                                     <td className="border border-gray-800 px-4 py-2 text-center text-black">หน่วยกิต</td>
                                     <th className={`border border-gray-800 px-4 py-2 text-center ${
                                         creditF !== 10 ? 'text-red-500' : 'text-green-500'
@@ -321,7 +358,7 @@ function Mohou() {
                                 </tr>
 
                                     <tr>
-                                    <td className="border border-gray-800 px-4 py-2 text-center text-black">100</td>
+                                    <td className="border border-gray-800 px-4 py-2 text-center text-black font-bold">100</td>
                                     <td className="border border-gray-800 px-4 py-2 text-center text-black">หน่วยกิต</td>
                                     <th className={`border border-gray-800 px-4 py-2 text-center ${
                                     (creditA + creditB + creditC + creditD + creditE + creditF) !== 100 ? 'text-red-500' : 'text-green-500'
@@ -331,7 +368,7 @@ function Mohou() {
                                     <td className="border border-gray-800 px-4 py-2 text-center text-black">หน่วยกิต</td>
                                     </tr>
                                     <tr>
-                                    <td className="border  border-gray-800 px-4 py-2 text-center text-black">36</td>
+                                    <td className="border  border-gray-800 px-4 py-2 text-center text-black font-bold">36</td>
                                     <td className="border  border-gray-800 px-4 py-2 text-center text-black">ชั่วโมง</td>
                                     <th className="border  border-gray-800 px-4 py-2 text-center text-green-500">
                                         36
@@ -340,6 +377,18 @@ function Mohou() {
                                 </tr>
                             </tbody>
                         </table>
+                        
+                       {/* เพิ่มปุ่มพิมพ์ด้านล่างขวาของตาราง */}
+                        <div className="flex justify-end mt-4 print:hidden">
+                            <button 
+                                onClick={handlePrint}
+                                className="flex items-center gap-2 px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-md transition-all duration-200 cursor-pointer"
+                            >
+                                <Printer size={20} />
+                                <span className="font-medium">พิมพ์แบบสรุปโครงสร้างหลักสูตร</span>
+                            </button>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>

@@ -230,7 +230,7 @@ const generateSubterms = (term) => {
     //             icon: "success",
     //             title: "ข้อมูลถูกบันทึกสำเร็จ!"
     //             });
-    
+
     //             // เรียกใช้ฟังก์ชัน fetchData เพื่อดึงข้อมูลใหม่หลังบันทึกสำเร็จ
     //             fetchData();
     //             handleCancel(); // รีเซ็ตฟอร์ม
@@ -256,7 +256,7 @@ const generateSubterms = (term) => {
     //     } else {
     //         setsummer([]);
     //     }    
-        
+
     //     (e) => {
     //         if (e.target.value.length > 4) {
     //             e.target.value = e.target.value.slice(0, 4);
@@ -289,53 +289,51 @@ const generateSubterms = (term) => {
                             />
                         </div>
 
-                        {/* ส่วน input สำหรับ summer และ summerYear */}
-
-                        <div className="flex flex-col gap-2 items-center">
-                            <h1 className="text-[20px]">ปีภาคเรียนฤดูร้อน</h1>
-                            <input
-                                className="p-1 h-auto border rounded-lg"
-                                placeholder="ปีภาคเรียนฤดูร้อน 1"
-                                type="number"
-                                value={summer}
-                                onChange={(e) => setSummer(e.target.value)}
-                                onInput={(e) => {
-                                    // จำกัดความยาวของตัวเลขไม่ให้เกิน 4 หลัก
-                                    if (e.target.value.length > 4) {
-                                        e.target.value = e.target.value.slice(0, 4);
-                                    }
-                                }}
-                            />
-                            {summerYear.map((value, index) => (
-                            <div key={index}>
+                            <div className="flex flex-col gap-2 items-center">
+                                <h1 className="text-[20px]">ปีการศึกษาภาคเรียนฤดูร้อน</h1>
                                 <input
-                                className="p-1 h-auto border rounded-lg"
-                                placeholder={`ปีภาคเรียนฤดูร้อน ${index + 2}`}
-                                type="number"
-                                value={value}
-                                onChange={(e) =>
-                                    handleSummerYearChange(index, e.target.value)
-                                }
-                                onInput={(e) => {
-                                    if (e.target.value.length > 4) {
-                                    e.target.value = e.target.value.slice(0, 4);
-                                    }
-                                }}
+                                    className="p-1 h-auto border rounded-lg"
+                                    placeholder="กรอกปีภาคเรียนฤดูร้อน1"
+                                    type="number"
+                                    value={summer}
+                                    onChange={(e) => setSummer(e.target.value)}
+                                    onInput={(e) => {
+                                        // จำกัดความยาวของตัวเลขไม่ให้เกิน 4 หลัก
+                                        if (e.target.value.length > 4) {
+                                            e.target.value = e.target.value.slice(0, 4);
+                                        }
+                                    }}
                                 />
+                                {summerYear.map((value, index) => (
+                                    <div key={index}>
+                                        <input
+                                            className="p-1 h-auto border rounded-lg"
+                                            placeholder={`ปีภาคเรียนฤดูร้อน ${index + 2}`}
+                                            type="number"
+                                            value={value}
+                                            onChange={(e) =>
+                                                handleSummerYearChange(index, e.target.value)
+                                            }
+                                            onInput={(e) => {
+                                                if (e.target.value.length > 4) {
+                                                    e.target.value = e.target.value.slice(0, 4);
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                ))}
                             </div>
-                            ))}
-                        </div>
 
+                        </div>
                     </div>
-                </div>
-                <div className='flex flex-row gap-4 items-center justify-center'>
-                    <button type='submit' className='bg-green-500 text-white p-2 rounded-lg w-20 hover:bg-green-600'>ยืนยัน</button>
-                    <button type='button' onClick={handleCancel} className='bg-red-500 text-white p-2 rounded-lg w-20 hover:bg-red-600'>ยกเลิก</button>
-                </div>
-            </form>
-        </div>
-    </>
-  )
+                    <div className='flex flex-row gap-4 items-center justify-center'>
+                        <button type='submit' className='bg-green-500 text-white p-2 rounded-lg w-20 hover:bg-green-600'>ยืนยัน</button>
+                        <button type='button' onClick={handleCancel} className='bg-red-500 text-white p-2 rounded-lg w-20 hover:bg-red-600'>ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
+        </>
+    )
 }
 
 export default Groupinfoform
