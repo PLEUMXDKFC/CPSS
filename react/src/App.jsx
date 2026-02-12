@@ -20,6 +20,7 @@ import Intocheckplan from './Page/intocheckplan';
 import Checkplan from './Page/checkplan';
 import Intoviewplan from './Page/intoviewplan';
 import Viewplan from './Page/view-plan';
+import Into_list_of_subject from './Page/Into_list_of_subject';
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
       <Route path="/checkplan" element={<Checkplan />} />
       <Route path="/intoviewplan" element={<Intoviewplan />} />
       <Route path="/view-plan" element={<Viewplan />} />
+      <Route path="/into_list_of_subject" element={<Into_list_of_subject />} />
     </Routes>
   );
 }
