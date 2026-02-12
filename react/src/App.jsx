@@ -21,6 +21,8 @@ import Checkplan from './Page/checkplan';
 import Intoviewplan from './Page/intoviewplan';
 import Viewplan from './Page/view-plan';
 import Into_list_of_subject from './Page/Into_list_of_subject';
+import List_of_subject from './Page/List_of_subject';
+import In_list_of_subject from './Page/In_list_of_subject';
 
 function App() {
   return (
@@ -47,6 +49,8 @@ function App() {
       <Route path="/intoviewplan" element={<Intoviewplan />} />
       <Route path="/view-plan" element={<Viewplan />} />
       <Route path="/into_list_of_subject" element={<Into_list_of_subject />} />
+      <Route path="/List_of_subject?/:planid" element={<List_of_subject />} />
+      <Route path="/In_list_of_subject/:infoid" element={<In_list_of_subject />} />
     </Routes>
   );
 }

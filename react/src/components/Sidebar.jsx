@@ -26,7 +26,7 @@ function Sidebar() {
       "/makeplan", "/intoplan", "/plan", "/add-subject",
       "/intocheckplan", "/checkplan"
     ];
-    const tablePaths = ["/Into_list_of_subject"];
+    const tablePaths = ["/Into_list_of_subject","/List_of_subject","/In_list_of_subject"];
     const reportPaths = ["/intoprintplan"];
     
     // เช็คว่า path ปัจจุบันตรงกับ section ไหน
@@ -211,13 +211,15 @@ function Sidebar() {
                   <Link
                     to="/Into_list_of_subject"
                     className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
-                      location.pathname.includes("/Into_list_of_subject")
+                      location.pathname.includes("/Into_list_of_subject") ||
+                      location.pathname.includes("/List_of_subject") ||
+                      location.pathname.includes("/In_list_of_subject")
                         ? "bg-white/20"
                         : ""
                     }`}
                   >
                     <LucideIcons.Book className="w-5 h-5 mr-2" />
-                    ข้อมูลรายวิชา
+                    รายวิชาจากแผนการเรียน
                   </Link>
                 </li>
               </motion.ul>
