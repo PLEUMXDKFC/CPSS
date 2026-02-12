@@ -148,29 +148,97 @@ function Sidebar() {
             </ul>
           )}
 
-            <ul className="flex flex-col space-y-2 flex-grow">
-                <li>
-                    <Link to={"/"} className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${location.pathname === '/' ? 'bg-white/20' : ''}`}>
-                        <LucideIcons.Book className="w-5 h-5 mr-2" />
-                        ข้อมูลรายวิชา
-                    </Link>
-                </li>
-                <li>
-                    <a href="{{ route('curriculum-structure.index') }}" className="flex items-center p-2 rounded-md hover:bg-white/20 transition {{ request()->is('curriculum-structure') ? 'bg-white/20' : '' }}">
-                        <LucideIcons.LayoutDashboard className="w-5 h-5 mr-2"></LucideIcons.LayoutDashboard>ดูโครงสร้างแผนการเรียน
-                    </a>
-                </li>
-                <li>
-                    <Link href="{{ route('plan.index') }}" className="flex items-center p-2 rounded-md hover:bg-white/20 transition {{ request()->is('make-plan') ? 'bg-white/20' : '' }}">
-                        <LucideIcons.Calendar className="w-5 h-5 mr-2"></LucideIcons.Calendar>สร้างแผนการเรียน
-                    </Link>
-                </li>
-                <li>
-                  <Link to={"/Intogroupinfo"} className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${location.pathname === '/Intogroupinfo' || location.pathname.startsWith('/Groupinfo/') ? 'bg-white/20' : '' }`}>
-                        <LucideIcons.User className="w-5 h-5 mr-2"></LucideIcons.User>ข้อมูลกลุ่มการเรียน
-                    </Link>
-                </li>
+          {openSection.plan && (
+            <ul className="flex flex-col space-y-2 mb-4">
+              <li>
+                <Link
+                  to="/Createstudyplan"
+                  className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                    location.pathname.includes("/Createstudyplan") ||
+                    location.pathname.includes("/courseinfo") ||
+                    location.pathname.includes("/courseadd")
+                      ? "bg-white/20"
+                      : ""
+                  }`}
+                >
+                  <LucideIcons.Book className="w-5 h-5 mr-2" />
+                  ข้อมูลรายวิชา
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/Intomohou"
+                  className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                    location.pathname.includes("/Intomohou") ||
+                    location.pathname.includes("/Redirectmohou")
+                      ? "bg-white/20"
+                      : ""
+                  }`}
+                >
+                  <LucideIcons.LayoutDashboard className="w-5 h-5 mr-2" />
+                  ดูแบบสรุปโครงสร้างหลักสูตร
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/intogroupinfo"
+                  className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                    location.pathname.includes("/intogroupinfo") ||
+                    location.pathname.includes("/Groupinfo")
+                      ? "bg-white/20"
+                      : ""
+                  }`}
+                >
+                  <LucideIcons.User className="w-5 h-5 mr-2" />
+                  ข้อมูลกลุ่มการเรียน
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/makeplan"
+                  className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                    location.pathname.includes("/makeplan") ||
+                    location.pathname.includes("/intoplan") ||
+                    location.pathname.includes("/plan") ||
+                    location.pathname.includes("/add-subject")
+                      ? "bg-white/20"
+                      : ""
+                  }`}
+                >
+                  <LucideIcons.Calendar className="w-5 h-5 mr-2" />
+                  สร้างแผนการเรียน
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/intocheckplan"
+                  className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                    location.pathname.includes("/checkplan") ||
+                    location.pathname.includes("/intocheckplan")
+                      ? "bg-white/20"
+                      : ""
+                  }`}
+                >
+                  <LucideIcons.CheckCircle className="w-5 h-5 mr-2" />
+                  ดูใบตรวจเช็คการจัดแผนการเรียน
+                </Link>
+              </li>
             </ul>
+          )}
+
+          {/* หมวด: พิมพ์รายงาน */}
+          <button
+            onClick={() => toggleSection("report")}
+            className="flex justify-between items-center w-full text-lg font-semibold mb-2 cursor-pointer"
+          >
+            <span>พิมพ์รายงาน</span>
+            {openSection.report ? (
+              <LucideIcons.ChevronDown className="w-5 h-5" />
+            ) : (
+              <LucideIcons.ChevronRight className="w-5 h-5" />
+            )}
+          </button>
+          <hr className="border-gray-500 mb-2" />
 
           {openSection.report && (
             <ul className="flex flex-col space-y-2 mb-4">
