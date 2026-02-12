@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "../components/Sidebar";
 
-const MakePlan = () => {
-  const [plans, setPlans] = useState([]);
+function Into_list_of_subject() {
+ const [plans, setPlans] = useState([]);
   const [filteredPlans, setFilteredPlans] = useState([]);
   const [selectedCode, setSelectedCode] = useState(""); // รหัสที่เลือก
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ const MakePlan = () => {
     <div className="flex min-h-screen">
       <Sidebar />
       <div className="ml-65 container mx-auto p-6">
-        <h2 className="text-center text-3xl font-bold mb-6">แผนการเรียน</h2>
+        <h2 className="text-center text-3xl font-bold mb-6">รายวิชาจากแผนการเรียน</h2>
 
         {/* ---------- ส่วน select กรองรหัส ---------- */}
         <div className="mb-6 text-center">
@@ -97,7 +97,7 @@ const MakePlan = () => {
                 className="bg-white shadow-lg p-6 rounded-xl cursor-pointer hover:bg-blue-200 transition-all"
                 onClick={() =>
                   navigate(
-                    `/intoplan?planid=${plan.planid}&course=${encodeURIComponent(
+                    `/List_of_subject?planid=${plan.planid}&course=${encodeURIComponent(
                       plan.course
                     )}&year=${plan.year}&student_id=${plan.student_id}`
                   )
@@ -116,4 +116,4 @@ const MakePlan = () => {
   );
 };
 
-export default MakePlan;
+export default Into_list_of_subject
