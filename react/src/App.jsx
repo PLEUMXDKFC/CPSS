@@ -11,6 +11,8 @@ import Intogroupinfo from './Page/Intogroupinfo';
 import Intoplan from './Page/Intoplan';
 import Intoprintplan from './Page/intoprintplan';
 import Printplan from './Page/printplan';
+import PrintPlan20 from './Page/PrintPlan20';
+import PrintPlanSingle20 from './Page/PrintPlanSingle20';
 import Courseinfo from './Page/Courseinfo';
 import Courseadd from './Page/Courseadd';
 import Redirectmohou from './Page/Redirectmohou';
@@ -23,6 +25,8 @@ import Viewplan from './Page/view-plan';
 import Into_list_of_subject from './Page/Into_list_of_subject';
 import List_of_subject from './Page/List_of_subject';
 import In_list_of_subject from './Page/In_list_of_subject';
+import Teacheradd from './Page/Teacheradd';
+import Studentroomadd from './Page/Studentroomadd';
 
 function App() {
   return (
@@ -38,6 +42,8 @@ function App() {
       <Route path="/intoplan" element={<Intoplan />} />
       <Route path="/intoprintplan" element={<Intoprintplan />} />
       <Route path="/printplan" element={<Printplan />} />
+      <Route path="/PrintPlan20" element={<PrintPlan20 />} />
+      <Route path="/printplan-single20" element={<PrintPlanSingle20 />} />
       <Route path="/Courseinfo" element={<Courseinfo />} />
       <Route path="/Courseinfo/:planid" element={<Courseinfo />} />
       <Route path="/Courseadd" element={<Courseadd />} />
@@ -51,6 +57,8 @@ function App() {
       <Route path="/into_list_of_subject" element={<Into_list_of_subject />} />
       <Route path="/List_of_subject?/:planid" element={<List_of_subject />} />
       <Route path="/In_list_of_subject/:infoid" element={<In_list_of_subject />} />
+      <Route path="/Teacheradd" element={<Teacheradd />} />
+      <Route path="/Studentroomadd" element={<Studentroomadd />} />
     </Routes>
   );
 }
