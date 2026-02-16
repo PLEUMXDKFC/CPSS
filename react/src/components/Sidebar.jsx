@@ -26,7 +26,7 @@ function Sidebar() {
       "/makeplan", "/intoplan", "/plan", "/add-subject",
       "/intocheckplan", "/checkplan"
     ];
-    const tablePaths = ["/Into_list_of_subject","/List_of_subject","/In_list_of_subject","/Teacheradd","/Studentroomadd"];
+    const tablePaths = ["/Into_list_of_subject","/List_of_subject","/In_list_of_subject","/Teacheradd","/Studentroomadd","/Into_Create_Table", "/Select_table", "/Create_Study_Table"];
     const reportPaths = ["/intoprintplan", "/PrintPlan20"];
     
     // เช็คว่า path ปัจจุบันตรงกับ section ไหน
@@ -246,6 +246,21 @@ function Sidebar() {
                   >
                     <LucideIcons.Users className="w-5 h-5 mr-2" />
                     เพิ่มข้อมูลห้องเรียน
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/Into_Create_Table"
+                    className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                      location.pathname.includes("/Into_Create_Table") ||
+                      location.pathname.includes("/Select_table") ||
+                      location.pathname.includes("/Create_Study_Table")
+                        ? "bg-white/20"
+                        : ""
+                    }`}
+                  >
+                    <LucideIcons.Table className="w-5 h-5 mr-2" />
+                    สร้างตารางเรียน
                   </Link>
                 </li>
               </motion.ul>

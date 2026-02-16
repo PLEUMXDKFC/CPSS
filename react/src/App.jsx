@@ -25,8 +25,11 @@ import Viewplan from './Page/view-plan';
 import Into_list_of_subject from './Page/Into_list_of_subject';
 import List_of_subject from './Page/List_of_subject';
 import In_list_of_subject from './Page/In_list_of_subject';
+import Into_Create_Table from './Page/Into_Create_Table';
 import Teacheradd from './Page/Teacheradd';
 import Studentroomadd from './Page/Studentroomadd';
+import Create_Study_Table from './Page/Create_Study_Table';
+import Select_table from './Page/Select_table';
 
 function App() {
   return (
@@ -59,6 +62,9 @@ function App() {
       <Route path="/In_list_of_subject/:infoid" element={<In_list_of_subject />} />
       <Route path="/Teacheradd" element={<Teacheradd />} />
       <Route path="/Studentroomadd" element={<Studentroomadd />} />
+      <Route path="/Into_Create_Table" element={<Into_Create_Table />} />
+      <Route path="/Create_Study_Table/:infoid" element={<Create_Study_Table />} />
+      <Route path="/Select_table" element={<Select_table />} />
     </Routes>
   );
 }

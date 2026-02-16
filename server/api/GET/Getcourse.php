@@ -5,7 +5,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['infoid'])) {
     $infoid = $_GET['infoid'];
 
     try {
-        $sql = "SELECT ci.infoid, ci.courseid, ci.year, ci.term, s.subject_id, s.course_code, s.course_name, 
+        $sql = "SELECT ci.infoid, ci.courseid, ci.planid, ci.year, ci.term, s.subject_id, s.course_code, s.course_name, 
                     s.theory, s.comply, s.credit, s.subject_category, s.subject_groups
                 FROM course_information ci
                 JOIN subject s ON ci.subject_id = s.subject_id
