@@ -26,8 +26,8 @@ function Sidebar() {
       "/makeplan", "/intoplan", "/plan", "/add-subject",
       "/intocheckplan", "/checkplan"
     ];
-    const tablePaths = ["/Into_list_of_subject","/List_of_subject","/In_list_of_subject"];
-    const reportPaths = ["/intoprintplan"];
+    const tablePaths = ["/Into_list_of_subject","/List_of_subject","/In_list_of_subject","/Teacheradd","/Studentroomadd"];
+    const reportPaths = ["/intoprintplan", "/PrintPlan20"];
     
     // เช็คว่า path ปัจจุบันตรงกับ section ไหน
     const isPlanPath = planPaths.some(p => path.includes(p));
@@ -222,6 +222,32 @@ function Sidebar() {
                     รายวิชาจากแผนการเรียน
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    to="/Teacheradd"
+                    className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                      location.pathname.includes("/Teacheradd")
+                        ? "bg-white/20"
+                        : ""
+                    }`}
+                  >
+                    <LucideIcons.UserPlus className="w-5 h-5 mr-2" />
+                    เพิ่มข้อมูลครู
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/Studentroomadd"
+                    className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                      location.pathname.includes("/Studentroomadd")
+                        ? "bg-white/20"
+                        : ""
+                    }`}
+                  >
+                    <LucideIcons.Users className="w-5 h-5 mr-2" />
+                    เพิ่มข้อมูลห้องเรียน
+                  </Link>
+                </li>
               </motion.ul>
             )}
           </AnimatePresence>
@@ -262,6 +288,19 @@ function Sidebar() {
                   >
                     <LucideIcons.Printer className="w-5 h-5 mr-2" />
                     พิมพ์แผนการเรียน
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/PrintPlan20"
+                    className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                      location.pathname.includes("/PrintPlan20")
+                        ? "bg-white/20"
+                        : ""
+                    }`}
+                  >
+                    <LucideIcons.Printer className="w-5 h-5 mr-2" />
+                    พิมพ์แผนการเรียน 2.0
                   </Link>
                 </li>
               </motion.ul>

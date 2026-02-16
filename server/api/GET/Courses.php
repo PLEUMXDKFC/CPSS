@@ -3,8 +3,8 @@ require("../conn.php");
 header("Content-Type: application/json; charset=UTF-8");
 
 // ตรวจสอบว่าค่า planid และ subject_groups ถูกส่งมาหรือไม่
-if (!isset($_GET['planid']) || !isset($_GET['subject_groups'])) {
-    echo json_encode(["status" => "error", "message" => "planid and subject_groups are required"]);
+if (!isset($_GET['planid']) || !isset($_GET['subject_groups']) || !isset($_GET['subject_category'])) {
+    echo json_encode(["status" => "error", "message" => "planid and subject_groups and subject_category are required"]);
     exit();
 }
 
