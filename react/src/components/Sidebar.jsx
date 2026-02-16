@@ -248,6 +248,19 @@ function Sidebar() {
                     เพิ่มข้อมูลห้องเรียน
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    to="/StudyHistoryTable"
+                    className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                      location.pathname.includes("/StudyHistoryTable")
+                        ? "bg-white/20"
+                        : ""
+                    }`}
+                  >
+                    <LucideIcons.Users className="w-5 h-5 mr-2" />
+                    ดูตารางย้อนหลัง
+                  </Link>
+                </li>
               </motion.ul>
             )}
           </AnimatePresence>

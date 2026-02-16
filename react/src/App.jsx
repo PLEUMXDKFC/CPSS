@@ -27,6 +27,9 @@ import List_of_subject from './Page/List_of_subject';
 import In_list_of_subject from './Page/In_list_of_subject';
 import Teacheradd from './Page/Teacheradd';
 import Studentroomadd from './Page/Studentroomadd';
+import StudyHistoryTable from './Page/StudyHistoryTable';
+import HistoryTable from './Page/HistoryTable';
+import IntoStudyHistoryTable from './Page/IntoStudyHistoryTable';
 
 function App() {
   return (
@@ -59,6 +62,9 @@ function App() {
       <Route path="/In_list_of_subject/:infoid" element={<In_list_of_subject />} />
       <Route path="/Teacheradd" element={<Teacheradd />} />
       <Route path="/Studentroomadd" element={<Studentroomadd />} />
+      <Route path="/StudyHistoryTable" element={<StudyHistoryTable />} />
+      <Route path="IntoStudyHistoryTable/HistoryTable/:infoid" element={<HistoryTable />} />
+      <Route path="/IntoStudyHistoryTable" element={<IntoStudyHistoryTable />} />
     </Routes>
   );
 }
