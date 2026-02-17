@@ -111,7 +111,7 @@ const StudyPlans = () => {
                                         <div
                                             key={plan.infoid}
                                             className="bg-white shadow-md rounded-xl p-4 mb-4 hover:bg-blue-100 transition cursor-pointer"
-                                            onClick={() => navigate(`HistoryTable/${plan.infoid}`, { state: plan })}
+                                            onClick={() => navigate(`HistoryTable/${plan.planid}`, { state: plan })}
                                         >
                                             <p className="text-blue-600 font-medium">
                                                 {plan.summer ? "ภาคฤดูร้อน" : `ภาคเรียนปกติ ${plan.term} เทอม`}
