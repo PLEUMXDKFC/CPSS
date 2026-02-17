@@ -29,6 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
+    // Log received data for debugging
+    error_log("InsertSchedule received: " . json_encode($data));
+
     try {
         $sql = "INSERT INTO create_study_table 
                 (teacher_id, courseid, room_id, planid, date, start_time, end_time, table_split_status, split_status, group_name, term) 
@@ -44,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':date' => $data['date'], // Day e.g., 'จันทร์'
             ':start_time' => $data['start_time'],
             ':end_time' => $data['end_time'],
-            ':table_split_status' => $data['table_split_status'] ?? false,
+            ':table_split_status' => (!empty($data['table_split_status']) && $data['table_split_status'] !== 'false') ? 'true' : 'false',
             ':split_status' => $data['split_status'] ?? 0,
             ':group_name' => $data['group_name'] ?? null,
             ':term' => $data['term'] ?? null

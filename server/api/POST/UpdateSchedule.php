@@ -22,6 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
+    // Log received data for debugging
+    error_log("UpdateSchedule received: " . json_encode($data));
+
     try {
         $sql = "UPDATE create_study_table 
                 SET teacher_id = :teacher_id,
