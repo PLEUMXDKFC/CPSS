@@ -528,7 +528,7 @@ function Create_Study_Table() {
             <div className="ml-64 container mx-auto p-6">
                 <button 
                     onClick={handleBack}
-                    className="mb-6 flex items-center gap-2 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 
+                    className="mb-6 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white 
                     rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                 >
                     <ArrowLeft size={20} />
@@ -587,7 +587,7 @@ function Create_Study_Table() {
                                     {!isSelectionMode ? (
                                         <button
                                             onClick={handleArrangeClick}
-                                            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 shadow-md transition-all font-medium whitespace-nowrap"
+                                            className="px-6 py-2 bg-white text-green-600 border border-green-600 rounded-lg hover:bg-green-600 hover:text-white shadow-md transition-all font-medium whitespace-nowrap"
                                         >
                                             จัดตารางเรียน
                                         </button>
@@ -595,13 +595,13 @@ function Create_Study_Table() {
                                         <>
                                             <button
                                                 onClick={handleSaveSchedule}
-                                                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition-all font-medium whitespace-nowrap"
+                                                className="px-6 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white shadow-md transition-all font-medium whitespace-nowrap"
                                             >
                                                 บันทึก
                                             </button>
                                             <button
                                                 onClick={handleCancel}
-                                                className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-md transition-all font-medium whitespace-nowrap"
+                                                className="px-6 py-2 bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-600 hover:text-white shadow-md transition-all font-medium whitespace-nowrap"
                                             >
                                                 ยกเลิก
                                             </button>
@@ -629,7 +629,7 @@ function Create_Study_Table() {
                                     {!courseCode && selectingForGroup !== 1 && (
                                         <button
                                             onClick={() => setSelectingForGroup(1)}
-                                            className="px-4 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 shadow-md transition-all font-medium text-sm"
+                                            className="px-4 py-1.5 bg-white text-green-600 border border-green-600 rounded-lg hover:bg-green-600 hover:text-white shadow-md transition-all font-medium text-sm"
                                         >
                                             จัดตารางเรียนกลุ่ม {group1Name}
                                         </button>
@@ -642,7 +642,7 @@ function Create_Study_Table() {
                                     {courseCode && (
                                         <button
                                             onClick={handleCancelGroup1}
-                                            className="px-4 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-md transition-all font-medium text-sm"
+                                            className="px-4 py-1.5 bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-600 hover:text-white shadow-md transition-all font-medium text-sm"
                                         >
                                             ยกเลิกกลุ่ม {group1Name}
                                         </button>
@@ -867,7 +867,7 @@ function Create_Study_Table() {
                                     {!courseCode2 && selectingForGroup !== 2 && (
                                         <button
                                             onClick={() => setSelectingForGroup(2)}
-                                            className="px-4 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 shadow-md transition-all font-medium text-sm"
+                                            className="px-4 py-1.5 bg-white text-green-600 border border-green-600 rounded-lg hover:bg-green-600 hover:text-white shadow-md transition-all font-medium text-sm"
                                         >
                                             จัดตารางเรียนกลุ่ม {group2Name}
                                         </button>
@@ -880,7 +880,7 @@ function Create_Study_Table() {
                                     {courseCode2 && (
                                         <button
                                             onClick={handleCancelGroup2}
-                                            className="px-4 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-md transition-all font-medium text-sm"
+                                            className="px-4 py-1.5 bg-white text-red-600 border border-red-600 rounded-lg hover:bg-red-600 hover:text-white shadow-md transition-all font-medium text-sm"
                                         >
                                             ยกเลิกกลุ่ม {group2Name}
                                         </button>
@@ -983,7 +983,7 @@ function Create_Study_Table() {
                         <div className="mt-4 flex justify-center">
                             <button
                                 onClick={handleSaveSplitSchedule}
-                                className="px-8 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition-all font-medium text-lg"
+                                className="px-8 py-2.5 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white shadow-md transition-all font-medium text-lg"
                             >
                                 บันทึกทั้ง 2 กลุ่ม
                             </button>
@@ -1284,13 +1284,13 @@ function Create_Study_Table() {
                                                         <>
                                                             <button
                                                                 onClick={handleSaveEdit}
-                                                                className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+                                                                className="px-3 py-1 bg-white text-green-600 border border-green-600 rounded hover:bg-green-600 hover:text-white text-sm transition-all"
                                                             >
                                                                 บันทึก
                                                             </button>
                                                             <button
                                                                 onClick={handleCancelEdit}
-                                                                className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm"
+                                                                className="px-3 py-1 bg-white text-gray-600 border border-gray-500 rounded hover:bg-gray-600 hover:text-white text-sm transition-all"
                                                             >
                                                                 ยกเลิก
                                                             </button>
@@ -1299,13 +1299,13 @@ function Create_Study_Table() {
                                                         <>
                                                             <button
                                                                 onClick={() => handleEdit(schedule)}
-                                                                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                                                                className="px-3 py-1 bg-white text-blue-600 border border-blue-600 rounded hover:bg-blue-600 hover:text-white text-sm transition-all"
                                                             >
                                                                 แก้ไข
                                                             </button>
                                                             <button
                                                                 onClick={() => handleDelete(schedule.field_id)}
-                                                                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                                                                className="px-3 py-1 bg-white text-red-600 border border-red-600 rounded hover:bg-red-600 hover:text-white text-sm transition-all"
                                                             >
                                                                 ลบ
                                                             </button>

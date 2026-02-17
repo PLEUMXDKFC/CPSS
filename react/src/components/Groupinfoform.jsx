@@ -350,8 +350,8 @@ function Groupinfoform({ fetchData }) {
                         </div>
                     </div>
                     <div className='flex flex-row gap-4 items-center justify-center'>
-                        <button type='submit' className='bg-green-500 text-white p-2 rounded-lg w-20 hover:bg-green-600'>ยืนยัน</button>
-                        <button type='button' onClick={handleCancel} className='bg-red-500 text-white p-2 rounded-lg w-20 hover:bg-red-600'>ยกเลิก</button>
+                        <button type='submit' className='bg-white text-green-600 border border-green-600 p-2 rounded-lg w-20 hover:bg-green-600 hover:text-white transition-all'>ยืนยัน</button>
+                        <button type='button' onClick={handleCancel} className='bg-white text-red-600 border border-red-600 p-2 rounded-lg w-20 hover:bg-red-600 hover:text-white transition-all'>ยกเลิก</button>
                     </div>
                 </form>
             </div>

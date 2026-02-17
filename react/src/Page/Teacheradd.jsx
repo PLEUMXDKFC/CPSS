@@ -1,7 +1,7 @@
 // src/Page/Teacheradd.jsx
 import React, { useEffect, useState } from "react";
 import { UserPlus, Users, RefreshCw, X, Trash2, Edit3 } from "lucide-react";
-import Sidebar from "../components/Sidebar.jsx";
+import Sidebar from "../components/sidebar.jsx";
 import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -287,7 +287,7 @@ function Teacheradd() {
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-4 py-2 text-sm font-semibold rounded-md border border-gray-400 text-gray-700 hover:bg-gray-50 transition"
+                    className="px-4 py-2 text-sm font-semibold rounded-md bg-white border border-gray-500 text-gray-600 hover:bg-gray-600 hover:text-white transition"
                   >
                     ยกเลิกการแก้ไข
                   </button>
@@ -296,7 +296,7 @@ function Teacheradd() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:bg-gray-400"
+                  className="px-6 py-2 bg-white border border-blue-600 text-blue-600 font-semibold rounded-md shadow-sm hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:bg-gray-200 disabled:border-gray-200 disabled:text-gray-400"
                 >
                   {isLoading
                     ? "กำลังบันทึก..."
@@ -365,7 +365,7 @@ function Teacheradd() {
                             <button
                               type="button"
                               onClick={() => handleEdit(t)}
-                              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-md border border-blue-500 text-blue-600 bg-white hover:bg-blue-50 hover:text-blue-700 hover:shadow-sm transition"
+                              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-md border border-blue-500 text-blue-600 bg-white hover:bg-blue-600 hover:text-white hover:shadow-sm transition"
                             >
                               <Edit3 className="w-3 h-3" />
                               แก้ไข
@@ -375,7 +375,7 @@ function Teacheradd() {
                             <button
                               type="button"
                               onClick={() => openDeleteModal(t)}
-                              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-md border border-red-500 text-red-600 bg-white hover:bg-red-50 hover:text-red-700 hover:shadow-sm transition"
+                              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-md border border-red-500 text-red-600 bg-white hover:bg-red-600 hover:text-white hover:shadow-sm transition"
                             >
                               <Trash2 className="w-3 h-3" />
                               ลบ
@@ -426,7 +426,7 @@ function Teacheradd() {
                 <button
                   type="button"
                   onClick={closeDeleteModal}
-                  className="min-w-[110px] px-4 py-2 text-sm font-semibold rounded-md bg-red-500 text-white hover:bg-red-400 transition disabled:bg-red-300"
+                  className="min-w-[110px] px-4 py-2 text-sm font-semibold rounded-md bg-white text-gray-600 border border-gray-500 hover:bg-gray-600 hover:text-white transition disabled:bg-gray-200"
                   disabled={isDeleting}
                 >
                   ยกเลิก
@@ -435,7 +435,7 @@ function Teacheradd() {
                   type="button"
                   onClick={confirmDelete}
                   disabled={isDeleting}
-                  className="min-w-[110px] px-4 py-2 text-sm font-semibold rounded-md bg-blue-500 text-white hover:bg-blue-400 transition disabled:bg-blue-300"
+                  className="min-w-[110px] px-4 py-2 text-sm font-semibold rounded-md bg-white text-red-600 border border-red-500 hover:bg-red-600 hover:text-white transition disabled:bg-red-300"
                 >
                   {isDeleting ? "กำลังลบ..." : "ลบข้อมูล"}
                 </button>

@@ -134,7 +134,7 @@ const Plansubject = () => {
         <div className="flex min-h-screen">
             <Sidebar />
             <div className="ml-64 container mx-auto p-4">
-                <button onClick={handleBack} className="mb-6 flex items-center gap-2 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
+                <button onClick={handleBack} className="mb-6 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
                     <ArrowLeft size={20} />
                     <span className="font-medium">ย้อนกลับ</span>
                 </button>
@@ -219,13 +219,13 @@ const Plansubject = () => {
                     <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white shadow-lg p-4 rounded-lg border border-gray-300 flex gap-4">
                         
                         <button
-                            className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 cursor-pointer transition-all"
+                            className="bg-white text-green-600 border border-green-600 px-6 py-2 rounded-lg font-bold hover:bg-green-600 hover:text-white cursor-pointer transition-all"
                             onClick={handleConfirmSelection}
                         >
                             ยืนยัน ({selectedSubjects.length} วิชา)
                         </button>
                         <button
-                            className="bg-red-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-600 cursor-pointer transition-all"
+                            className="bg-white text-red-600 border border-red-600 px-6 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white cursor-pointer transition-all"
                             onClick={clearSelection} // ✅ ใช้ SweetAlert ยืนยันก่อนล้าง
                         >
                             ล้างการเลือก
