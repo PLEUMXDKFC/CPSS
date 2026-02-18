@@ -9,9 +9,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 function TeacherGroupSchedule() {
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // รับข้อมูลจากหน้าที่แล้ว (student_id แทน year)
-    const { teacher, student_id } = location.state || {}; 
+    const { teacher, student_id } = location.state || {};
 
     const [plans, setPlans] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,7 +22,7 @@ function TeacherGroupSchedule() {
         axios.get(`${API_BASE_URL}/server/api/GET/Get_group_information.php`)
             .then((res) => {
                 const data = Array.isArray(res.data) ? res.data : [];
-                
+
                 // Filter by Student ID (Plan)
                 const filtered = data.filter((p) => String(p.student_id) === String(student_id));
 
@@ -53,7 +53,7 @@ function TeacherGroupSchedule() {
                                 plans: plans.sort((a, b) => {
                                     const aIsSummer = a.summer !== null;
                                     const bIsSummer = b.summer !== null;
-                                    
+
                                     // Sort logic: Year Ascending, then Term
                                     if (a.year !== b.year) return a.year - b.year;
                                     if (aIsSummer !== bIsSummer) return aIsSummer ? 1 : -1;
@@ -72,6 +72,17 @@ function TeacherGroupSchedule() {
         navigate("/TeacherYearSchedule", { state: { teacher } });
     };
 
+    const getTerms = (plan) => {
+        const level = plan.sublevel || "";
+        // Check level first to enforce correct terms for known levels
+        if (level.includes("ปวช.1") || level.includes("ปวส.1")) return ["1", "2"];
+        if (level.includes("ปวช.2") || level.includes("ปวส.2")) return ["3", "4"];
+        if (level.includes("ปวช.3")) return ["5", "6"];
+
+        if (plan.subterm) return plan.subterm.split("-").map(t => t.trim());
+        return ["1", "2"];
+    };
+
     const handleSelectPlan = (plan) => {
         navigate(`/TeacherHistoryTable/${teacher.teacher_id}`, {
             state: {
@@ -80,6 +91,9 @@ function TeacherGroupSchedule() {
                 planid: plan.planid,
                 infoid: plan.infoid,
                 term: plan.term,
+                subterm: plan.subterm,
+                sublevel: plan.sublevel,
+                terms: getTerms(plan),
                 year: plan.year,
                 group_name: plan.group_name,
             },
@@ -99,10 +113,10 @@ function TeacherGroupSchedule() {
         <div className="flex min-h-screen">
             <Sidebar />
             <div className="ml-65 container mx-auto p-6">
-                
+
                 <button onClick={handleBack} className="mb-6 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
-                                        <ArrowLeft size={20} />
-                                        <span className="font-medium">ย้อนกลับ</span>
+                    <ArrowLeft size={20} />
+                    <span className="font-medium">ย้อนกลับ</span>
                 </button>
 
                 <h2 className="text-center text-3xl font-bold mb-2">ตารางสอนครู</h2>

@@ -52,6 +52,19 @@ try {
         exit;
     }
 
+    // ตรวจสอบข้อมูลซ้ำ (ชื่อห้อง + ประเภทห้อง ยกเว้นตัวเอง)
+    $checkSql = "SELECT COUNT(*) FROM room WHERE room_name = :room_name AND room_type = :room_type AND room_id != :room_id";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->bindParam(':room_name', $room_name);
+    $checkStmt->bindParam(':room_type', $room_type);
+    $checkStmt->bindParam(':room_id', $room_id, PDO::PARAM_INT);
+    $checkStmt->execute();
+    if ($checkStmt->fetchColumn() > 0) {
+        http_response_code(409);
+        echo json_encode(['status' => 'error', 'message' => 'ข้อมูลห้องเรียนนี้มีอยู่ในระบบแล้ว (ชื่อห้องและประเภทห้องซ้ำ)']);
+        exit();
+    }
+
     // เตรียม SQL
     $sql = "UPDATE room 
             SET room_name = :room_name, room_type = :room_type

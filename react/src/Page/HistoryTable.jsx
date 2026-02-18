@@ -24,26 +24,26 @@ const api = {
 };
 
 const DAYS = [
-    { key: "monday",    label: "จันทร์"    },
-    { key: "tuesday",   label: "อังคาร"    },
-    { key: "wednesday", label: "พุธ"       },
-    { key: "thursday",  label: "พฤหัสบดี" },
-    { key: "friday",    label: "ศุกร์"    },
+    { key: "monday", label: "จันทร์" },
+    { key: "tuesday", label: "อังคาร" },
+    { key: "wednesday", label: "พุธ" },
+    { key: "thursday", label: "พฤหัสบดี" },
+    { key: "friday", label: "ศุกร์" },
 ];
 
 const PERIODS = [
-    { period: null, label: "07.30\n08.00", sub: "",   isSpecial: true, specialLabel: "กิจกรรมหน้าเสาธงหัวหน้าแผนก" },
-    { period: 1,   label: "08.00\n09.00", sub: "1"  },
-    { period: 2,   label: "09.00\n10.00", sub: "2"  },
-    { period: 3,   label: "10.00\n11.00", sub: "3"  },
-    { period: 4,   label: "11.00\n12.00", sub: "4"  },
-    { period: null, label: "12.00\n13.00", sub: "",   isSpecial: true, specialLabel: "พักรับประทานอาหารกลางวัน" },
-    { period: 5,   label: "13.00\n14.00", sub: "5"  },
-    { period: 6,   label: "14.00\n15.00", sub: "6"  },
-    { period: 7,   label: "15.00\n16.00", sub: "7"  },
-    { period: 8,   label: "16.00\n17.00", sub: "8"  },
-    { period: 9,   label: "17.00\n18.00", sub: "9"  },
-    { period: 10,  label: "18.00\n19.00", sub: "10" },
+    { period: null, label: "07.30\n08.00", sub: "", isSpecial: true, specialLabel: "กิจกรรมหน้าเสาธงหัวหน้าแผนก" },
+    { period: 1, label: "08.00\n09.00", sub: "1" },
+    { period: 2, label: "09.00\n10.00", sub: "2" },
+    { period: 3, label: "10.00\n11.00", sub: "3" },
+    { period: 4, label: "11.00\n12.00", sub: "4" },
+    { period: null, label: "12.00\n13.00", sub: "", isSpecial: true, specialLabel: "พักรับประทานอาหารกลางวัน" },
+    { period: 5, label: "13.00\n14.00", sub: "5" },
+    { period: 6, label: "14.00\n15.00", sub: "6" },
+    { period: 7, label: "15.00\n16.00", sub: "7" },
+    { period: 8, label: "16.00\n17.00", sub: "8" },
+    { period: 9, label: "17.00\n18.00", sub: "9" },
+    { period: 10, label: "18.00\n19.00", sub: "10" },
 ];
 
 const ROW_H = 100; // ความสูงแต่ละแถว px
@@ -124,39 +124,52 @@ const Plans = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const printRef = useRef(null);
-    
-    // Default values or from navigation state
-    // Default values or from navigation state
-    const [data, setData]             = useState([]);
-    const [loading, setLoading]       = useState(false);
-    const [error, setError]           = useState(null);
+
+    // Helper to get terms - Copied from TeacherHistoryTable for consistency
+    const getTermsFromSubterm = (sub) => {
+        if (!sub) return [];
+        return sub.split("-").map(t => t.trim());
+    };
+
+    const getTermsFromSublevel = (level) => {
+        if (!level) return [];
+        if (level.includes("ปวช.1") || level.includes("ปวส.1")) return ["1", "2"];
+        if (level.includes("ปวช.2") || level.includes("ปวส.2")) return ["3", "4"];
+        if (level.includes("ปวช.3")) return ["5", "6"];
+        return ["1", "2"];
+    };
+
+    // Determine initial terms based on location.state (passed from IntoStudyHistoryTable)
+    let initialTerms = ["1", "2"];
+    let initialFilterTerm = "1";
+
+    if (location.state) {
+        if (location.state.terms && location.state.terms.length > 0) {
+            initialTerms = location.state.terms;
+        } else if (location.state.subterm) {
+            initialTerms = getTermsFromSubterm(location.state.subterm);
+        } else if (location.state.sublevel) {
+            initialTerms = getTermsFromSublevel(location.state.sublevel);
+        }
+
+        // Use the passed term as initial filter if valid, else first available
+        if (location.state.term && initialTerms.includes(String(location.state.term))) {
+            initialFilterTerm = String(location.state.term);
+        } else {
+            initialFilterTerm = initialTerms[0] || "1";
+        }
+    }
+
+    const [availableTerms, setAvailableTerms] = useState(initialTerms);
+    const [filterTerm, setFilterTerm] = useState(initialFilterTerm);
+
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     const [filterPlan, setFilterPlan] = useState(location.state?.planid || planid || "");
     const [filterInfo, setFilterInfo] = useState(location.state?.infoid || "");
     const [filterYear, setFilterYear] = useState(location.state?.year || "");
-    
-    // Toggle Logic State - Initialize directly from location.state to avoid race conditions
-    const [termPair, setTermPair] = useState(() => {
-        if (location.state?.term) {
-            const t = Number(location.state.term);
-            if (t % 2 !== 0) return [t, t + 1];
-            return [t - 1, t];
-        }
-        return [1, 2]; // Default
-    });
-
-    const [displayTerm, setDisplayTerm] = useState(() => {
-         // Always default to 1 as requested
-         return 1;
-    });
-
-    const [filterTerm, setFilterTerm] = useState(() => {
-        // Always default to 1 as requested (Semester 1)
-        // Even if incoming term is 5 (Year 3 Sem 1), API expects term=1 with year
-        return "1";
-    });
-
-    const [hasInitializedTerm, setHasInitializedTerm] = useState(() => !!location.state?.term);
 
     // Initialize from location state if available (Only for non-primitive updates if any, but we handled them above)
     // We can remove the useEffect that handled location.state logic for term/pair
@@ -165,7 +178,7 @@ const Plans = () => {
             setFilterPlan(location.state.planid);
             setFilterInfo(location.state.infoid);
             setFilterYear(location.state.year);
-            // Term logic is now handled in useState
+            // Term logic is now handled in useState initialization
         }
     }, [location.state]);
 
@@ -202,16 +215,9 @@ const Plans = () => {
         window.location.reload();
     };
 
-    const handleToggleTerm = (num) => {
-        setDisplayTerm(num);
-        // num is 1 or 2
-        // We always want to filter by term 1 or 2 for the API
-        setFilterTerm(String(num));
-    };
-
     const targetPlanId = Number(filterPlan);
     const targetInfoId = Number(filterInfo);
-    const classInfo    = data.length > 0 ? data[0] : null;
+    const classInfo = data.length > 0 ? data[0] : null;
 
     const fetchData = useCallback(async () => {
         const planIdNum = Number(filterPlan);
@@ -230,58 +236,27 @@ const Plans = () => {
             const rows = await api.getSchedule({
                 planid: planIdNum,
                 infoid: infoIdNum,
-                term:   filterTerm, // This might be empty initially
-                year:   filterYear,
+                term: filterTerm, // Using strict filterTerm logic
+                year: filterYear,
             });
 
             const normalized = (Array.isArray(rows) ? rows : []).map((r) => ({
                 ...r,
-                date:                (r.date || "").toLowerCase(),
-                start_time:          Number(r.start_time),
-                end_time:            Number(r.end_time),
-                courseid:            Number(r.courseid),
-                planid:              Number(r.planid),
-                infoid:              Number(r.infoid),
-                split_status:        Number(r.split_status),
-                table_split_status:  r.table_split_status ?? "false",
+                date: (r.date || "").toLowerCase(),
+                start_time: Number(r.start_time),
+                end_time: Number(r.end_time),
+                courseid: Number(r.courseid),
+                planid: Number(r.planid),
+                infoid: Number(r.infoid),
+                split_status: Number(r.split_status),
+                table_split_status: r.table_split_status ?? "false",
             }));
 
-            // Auto-detect if not initialized
-            let firstRow = normalized[0];
-            if (firstRow) {
-                if (!filterInfo) {
-                    setFilterInfo(String(firstRow.infoid));
-                }
-                if (!filterYear) setFilterYear(String(firstRow.class_year));
-                
-                // If filterTerm was empty, we detect it now
-                if (!filterTerm && !hasInitializedTerm) {
-                    const t = Number(firstRow.term);
-                    if (t % 2 !== 0) {
-                        setTermPair([t, t + 1]);
-                        setDisplayTerm(1);
-                        setFilterTerm("1"); // Map odd to 1
-                    } else {
-                        setTermPair([t - 1, t]);
-                        setDisplayTerm(1); // Force to 1
-                        setFilterTerm("1"); // Map even -> odd -> 1
-                    }
-                    setHasInitializedTerm(true);
-                    // Note: Setting state here will trigger re-fetch in next render loop
-                }
-            }
-
-            const currentInfoId = filterInfo ? Number(filterInfo) : (firstRow?.infoid);
-            
-            // Filter strictly by the current term we decided on
-            // If filterTerm is empty (first load), we might show everything or wait for state update
-            // Ideally we wait. But if we show everything it might be confusing.
-            // Let's rely on re-render when filterTerm updates.
-            
+            // Filter strict logic
             const filtered = normalized.filter(
-                (r) => r.planid === planIdNum 
-                    && (currentInfoId ? r.infoid === Number(currentInfoId) : true)
-                    && (filterTerm ? r.term == filterTerm : true) 
+                (r) => r.planid === planIdNum
+                    && (filterInfo ? r.infoid === Number(filterInfo) : true)
+                    && (filterTerm ? r.term == filterTerm : true)
             );
 
             setData(filtered);
@@ -291,7 +266,7 @@ const Plans = () => {
         } finally {
             setLoading(false);
         }
-    }, [filterPlan, filterInfo, filterTerm, filterYear, hasInitializedTerm]);
+    }, [filterPlan, filterInfo, filterTerm, filterYear]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -405,9 +380,9 @@ const Plans = () => {
                     const items = data
                         .filter(
                             (s) =>
-                                s.planid     === targetPlanId &&
-                                s.infoid     === targetInfoId &&
-                                s.date       === dayKey &&
+                                s.planid === targetPlanId &&
+                                s.infoid === targetInfoId &&
+                                s.date === dayKey &&
                                 s.start_time === p.period
                         )
                         .sort((a, b) => a.split_status - b.split_status); // 1=top, 2=bottom
@@ -513,31 +488,22 @@ const Plans = () => {
                             <ArrowLeft size={20} />
                             <span className="font-medium">ย้อนกลับ</span>
                         </button>
-                        
-                        {/* Term Toggles */}
-                        <div className="flex rounded-md shadow-sm" role="group">
-                             <button
-                                type="button"
-                                onClick={() => handleToggleTerm(1)}
-                                className={`px-4 py-2 text-sm font-medium border border-blue-600 rounded-l-lg focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 transition-all duration-200
-                                    ${displayTerm === 1 
-                                        ? "bg-blue-600 text-white hover:bg-blue-700" 
-                                        : "bg-white text-blue-600 hover:bg-blue-600 hover:text-white"
-                                    }`}
-                            >
-                                ภาคเรียนที่ 1
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleToggleTerm(2)}
-                                className={`px-4 py-2 text-sm font-medium border border-blue-600 rounded-r-lg focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 transition-all duration-200
-                                    ${displayTerm === 2 
-                                        ? "bg-blue-600 text-white hover:bg-blue-700" 
-                                        : "bg-white text-blue-600 hover:bg-blue-600 hover:text-white"
-                                    }`}
-                            >
-                                ภาคเรียนที่ 2
-                            </button>
+
+                        {/* Dynamic Term Toggles (from TeacherHistoryTable style) */}
+                        <div className="flex items-center gap-2 mb-0">
+                            <span className="font-semibold text-gray-700 ml-2">เลือกเทอม:</span>
+                            {availableTerms.map((term) => (
+                                <button
+                                    key={term}
+                                    onClick={() => {
+                                        setFilterTerm(term);
+                                        console.log("User selected Term:", term);
+                                    }}
+                                    className={`px-4 py-2 rounded-lg border transition-all ${filterTerm === term ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}
+                                >
+                                    เทอม {term}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
@@ -586,7 +552,7 @@ const Plans = () => {
                             จำนวนนักเรียน.............คน
                         </p>
                         <p className="text-base mt-0.5">
-                            ภาคเรียนที่..........{displayTerm}...............&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            ภาคเรียนที่..........{filterTerm}...............&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                             ปีการศึกษา..........{filterYear}...............
                         </p>
                     </div>

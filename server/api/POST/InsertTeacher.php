@@ -33,6 +33,18 @@ try {
         exit();
     }
 
+    // ตรวจสอบข้อมูลซ้ำ (ชื่อ + นามสกุล)
+    $checkSql = "SELECT COUNT(*) FROM teacher_info WHERE fname = :fname AND lname = :lname";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->bindParam(':fname', $data->fname);
+    $checkStmt->bindParam(':lname', $data->lname);
+    $checkStmt->execute();
+    if ($checkStmt->fetchColumn() > 0) {
+        http_response_code(409);
+        echo json_encode(['status' => 'error', 'message' => 'ข้อมูลครูผู้สอนนี้มีอยู่ในระบบแล้ว (ชื่อ-นามสกุลซ้ำ)']);
+        exit();
+    }
+
     // เตรียม SQL
     $sql = "INSERT INTO teacher_info (prefix, fname, lname, department) 
             VALUES (:prefix, :fname, :lname, :department)";

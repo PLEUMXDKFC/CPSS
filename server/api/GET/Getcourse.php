@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['infoid'])) {
         $sql = "SELECT gi.infoid, ci.courseid, ci.planid, ci.year, ci.term, s.subject_id, s.course_code, s.course_name, 
                     s.theory, s.comply, s.credit, s.subject_category, s.subject_groups
                 FROM course_information ci
-                JOIN group_information gi ON ci.planid = gi.planid
+                JOIN group_information gi ON ci.planid = gi.planid AND ci.infoid = gi.infoid
                 JOIN subject s ON ci.subject_id = s.subject_id
                 WHERE gi.infoid = :infoid
                 ORDER BY ci.year, 

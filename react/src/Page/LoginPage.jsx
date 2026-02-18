@@ -154,6 +154,7 @@ const LoginPage = () => {
           <ul className="hidden md:flex gap-6 text-lg">
             <li><Link to="/" className="hover:text-blue-600">หน้าหลัก</Link></li>
             <li><Link to="/intoviewplan" className="hover:text-blue-600">แผนการเรียน</Link></li>
+            <li><Link to="/Studyhistorytable" className="hover:text-blue-600">ตารางเรียน (ทั่วไป)</Link></li>
             <li><Link to="/LoginPage" className="text-blue-600 hover:text-blue-600">เข้าสู่ระบบ</Link></li>
           </ul>
         </div>
@@ -163,6 +164,7 @@ const LoginPage = () => {
             <ul className="flex flex-col gap-4 text-lg">
               <li><Link to="/" onClick={() => setMenuOpen(false)}>หน้าหลัก</Link></li>
               <li><Link to="/intoviewplan" onClick={() => setMenuOpen(false)}>แผนการเรียน</Link></li>
+              <li><Link to="/Studyhistorytable" onClick={() => setMenuOpen(false)}>ตารางเรียน (ทั่วไป)</Link></li>
               <li><Link to="/LoginPage" onClick={() => setMenuOpen(false)}>เข้าสู่ระบบ</Link></li>
             </ul>
           </div>
@@ -222,6 +224,19 @@ const LoginPage = () => {
           >
             ยืนยัน
           </button>
+
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="flex-shrink-0 mx-4 text-gray-400">หรือ</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
+
+          <Link
+            to="/Studyhistorytable"
+            className="w-full block text-center bg-green-500 text-white py-2 rounded hover:bg-green-600 transition"
+          >
+            ดูตารางเรียน (บุคคลทั่วไป)
+          </Link>
         </form>
       </div>
     </div>

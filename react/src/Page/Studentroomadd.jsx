@@ -74,6 +74,21 @@ function Studentroomadd() {
     e.preventDefault();
     setIsLoading(true);
 
+    // ตรวจสอบข้อมูลซ้ำ (client-side: ชื่อห้อง + ประเภทห้องต้องไม่ซ้ำกัน)
+    const trimName = formData.room_name.trim();
+    const trimType = formData.room_type.trim();
+    const isDuplicate = rooms.some(
+      (r) =>
+        r.room_name.trim().toLowerCase() === trimName.toLowerCase() &&
+        r.room_type?.trim().toLowerCase() === trimType.toLowerCase() &&
+        (!isEditing || r.room_id !== editingRoomId)
+    );
+    if (isDuplicate) {
+      showMessage("error", "ข้อมูลห้องเรียนนี้มีอยู่ในระบบแล้ว (ชื่อห้องและประเภทห้องซ้ำ)");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const payload = {
         ...formData,

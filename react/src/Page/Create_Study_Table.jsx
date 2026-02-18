@@ -7,14 +7,14 @@ import Sidebar from "../components/sidebar";
 import { ArrowLeft, X } from "lucide-react";
 
 function Create_Study_Table() {
-  const { infoid } = useParams();
+    const { infoid } = useParams();
     const [plans, setPlans] = useState({});
     const [subjects, setSubjects] = useState({});
-    
+
     const [selectedTerm, setSelectedTerm] = useState("1");
     const [availableTerms, setAvailableTerms] = useState(["1", "2"]); // Default to 1, 2 until loaded
     const [isSelectionMode, setIsSelectionMode] = useState(false);
-    
+
     const [courseCode, setCourseCode] = useState("");
     const [courseName, setCourseName] = useState("");
     const [courseId, setCourseId] = useState(null);
@@ -25,7 +25,7 @@ function Create_Study_Table() {
     const [teacherId, setTeacherId] = useState(null);
     const [roomName, setRoomName] = useState("");
     const [roomId, setRoomId] = useState(null);
-    
+
     const [day, setDay] = useState("Monday");
 
     // Day mapping: English (saved to DB) -> Thai (display)
@@ -77,14 +77,14 @@ function Create_Study_Table() {
 
     useEffect(() => {
         if (!infoid) return;
-    
+
         axios.get(`${API_BASE_URL}/server/api/GET/getgroupforplan.php?infoid=${infoid}`)
             .then(response => {
                 if (!Array.isArray(response.data)) {
                     console.error("❌ ข้อมูลที่ได้รับไม่ใช่ Array:", response.data);
                     return;
                 }
-    
+
                 const groupedPlans = response.data.reduce((acc, plan) => {
                     const sublevelDisplay = plan.sublevel ? plan.sublevel : `ภาคเรียนฤดูร้อน ปีการศึกษา ${plan.year}`;
                     const key = `${sublevelDisplay}-${plan.group_name}`;
@@ -92,11 +92,11 @@ function Create_Study_Table() {
                     acc[key].push(plan);
                     return acc;
                 }, {});
-    
+
                 setPlans(groupedPlans);
             })
             .catch(error => console.error("❌ Error fetching study plans:", error));
-    
+
         axios.get(`${API_BASE_URL}/server/api/GET/Getcourse.php?infoid=${infoid}`)
             .then(response => {
                 if (!Array.isArray(response.data)) {
@@ -104,7 +104,7 @@ function Create_Study_Table() {
                     return;
                 }
                 console.log("ข้อมูลรายวิชาที่ได้รับ:", response.data);
-    
+
                 const groupedSubjects = response.data.reduce((acc, subject) => {
                     const term = subject.term || "summer";
                     if (!acc[subject.infoid]) acc[subject.infoid] = {};
@@ -112,12 +112,12 @@ function Create_Study_Table() {
                     acc[subject.infoid][term].push(subject);
                     return acc;
                 }, {});
-    
+
                 console.log("ข้อมูลรายวิชาที่จัดกลุ่มแล้ว:", groupedSubjects);
                 setSubjects(groupedSubjects);
             })
             .catch(error => console.error("❌ Error fetching subjects:", error));
-            
+
         axios.get(`${API_BASE_URL}/server/api/GET/get_teachers.php`)
             .then(res => setTeachers(res.data))
             .catch(err => console.error("Error fetching teachers:", err));
@@ -128,7 +128,7 @@ function Create_Study_Table() {
 
         // Fetch saved schedules
         fetchSavedSchedules();
-            
+
     }, [infoid]);
 
     const fetchSavedSchedules = () => {
@@ -147,7 +147,7 @@ function Create_Study_Table() {
             if (firstPlan && firstPlan.group_name) {
                 const groupName = firstPlan.group_name;
                 setCurrentGroupName(groupName);
-                
+
                 // Check if paired (e.g., "1-2", "3-4", "5-6")
                 if (groupName.includes("-")) {
                     setIsPairedGroup(true);
@@ -164,7 +164,7 @@ function Create_Study_Table() {
                     if (terms.length > 0) {
                         setAvailableTerms(terms);
                         if (!terms.includes(selectedTerm)) {
-                             setSelectedTerm(terms[0]);
+                            setSelectedTerm(terms[0]);
                         }
                     }
                 }
@@ -344,16 +344,62 @@ function Create_Study_Table() {
         return (end - start + 1) > maxDuration;
     };
 
-    const handleSaveSchedule = () => {
-        if (!courseId || !teacherId || !roomName || !day || !startPeriod || !endPeriod) {
-            Swal.fire("กรุณากรอกข้อมูลให้ครบถ้วน", "", "warning");
-            return;
+    const checkConflict = async (checkData) => {
+        console.log("🔍 [CheckConflict] Checking payload:", checkData);
+        try {
+            const res = await axios.get(`${API_BASE_URL}/server/api/GET/CheckConflict.php`, { params: checkData });
+            console.log("🔍 [CheckConflict] Response:", res.data);
+
+            if (res.data.status === 'conflict') {
+                console.warn("❌ [CheckConflict] Conflict detected:", res.data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ข้อมูลซ้อนทับ',
+                    html: res.data.message,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'ตกลง'
+                });
+                return false;
+            }
+            console.log("✅ [CheckConflict] No conflict found.");
+            return true;
+        } catch (err) {
+            console.error("❌ [CheckConflict] Error:", err);
+            const msg = err.response?.data?.message || err.message || "Unknown error";
+            Swal.fire("ข้อผิดพลาด", "ระบบตรวจสอบขัดข้อง: " + msg, "error");
+            return false;
         }
+    };
+
+    const handleSaveSchedule = async () => {
+        console.log("💾 [handleSaveSchedule] Starting save process...");
+
+        // Validation with specific message
+        if (!courseId) { console.warn("⚠️ Validation failed: No courseId"); Swal.fire("กรุณาเลือกวิชา", "", "warning"); return; }
+        if (!teacherId) { console.warn("⚠️ Validation failed: No teacherId"); Swal.fire("กรุณาเลือกครูผู้สอน", "", "warning"); return; }
+        if (!roomName) { console.warn("⚠️ Validation failed: No roomName"); Swal.fire("กรุณาเลือกห้องเรียน", "", "warning"); return; }
+        if (!day) { console.warn("⚠️ Validation failed: No day"); Swal.fire("กรุณาเลือกวัน", "", "warning"); return; }
+        if (!startPeriod || !endPeriod) { console.warn("⚠️ Validation failed: No time period"); Swal.fire("กรุณาเลือกเวลาเรียน", "", "warning"); return; }
 
         if (isEndPeriodInvalid()) {
+            console.warn("⚠️ Validation failed: Invalid period duration");
             Swal.fire("ช่วงเวลาไม่ถูกต้อง", "จำนวนคาบเกินกว่าที่กำหนดในรายวิชา", "error");
             return;
         }
+
+        // Check Conflict
+        const conflictPayload = {
+            teacher_id: teacherId,
+            room_id: roomId || 0,
+            planid: planId,
+            group_name: currentGroupName,
+            date: day,
+            start_time: parseInt(startPeriod),
+            end_time: parseInt(endPeriod),
+            term: selectedTerm
+        };
+        const isSafe = await checkConflict(conflictPayload);
+        if (!isSafe) return;
 
         const payload = {
             teacher_id: teacherId,
@@ -381,21 +427,54 @@ function Create_Study_Table() {
                 }
             })
             .catch(err => {
-                Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์", "error");
+                console.error("Save error:", err);
+                const msg = err.response?.data?.message || err.message || "Unknown error";
+                Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์: " + msg, "error");
             });
     };
 
-    const handleSaveSplitSchedule = () => {
+    const handleSaveSplitSchedule = async () => {
+        console.log("💾 [handleSaveSplitSchedule] Starting split save process...");
+
         // Validate group 1
-        if (!courseId || !teacherId || !roomName || !day || !startPeriod || !endPeriod) {
-            Swal.fire("กรุณากรอกข้อมูลกลุ่ม " + group1Name + " ให้ครบถ้วน", "", "warning");
-            return;
-        }
+        if (!courseId) { console.warn("⚠️ Validation failed: Group 1 missing course"); Swal.fire("กรุณาเลือกวิชา (กลุ่ม " + group1Name + ")", "", "warning"); return; }
+        if (!teacherId) { console.warn("⚠️ Validation failed: Group 1 missing teacher"); Swal.fire("กรุณาเลือกครู (กลุ่ม " + group1Name + ")", "", "warning"); return; }
+        if (!roomName) { console.warn("⚠️ Validation failed: Group 1 missing room"); Swal.fire("กรุณาเลือกห้อง (กลุ่ม " + group1Name + ")", "", "warning"); return; }
+        if (!day || !startPeriod || !endPeriod) { console.warn("⚠️ Validation failed: Group 1 missing time"); Swal.fire("กรุณาเลือกเวลา (กลุ่ม " + group1Name + ")", "", "warning"); return; }
+
         // Validate group 2
-        if (!courseId2 || !teacherId2 || !roomName2 || !day2 || !startPeriod2 || !endPeriod2) {
-            Swal.fire("กรุณากรอกข้อมูลกลุ่ม " + group2Name + " ให้ครบถ้วน", "", "warning");
-            return;
-        }
+        if (!courseId2) { console.warn("⚠️ Validation failed: Group 2 missing course"); Swal.fire("กรุณาเลือกวิชา (กลุ่ม " + group2Name + ")", "", "warning"); return; }
+        if (!teacherId2) { console.warn("⚠️ Validation failed: Group 2 missing teacher"); Swal.fire("กรุณาเลือกครู (กลุ่ม " + group2Name + ")", "", "warning"); return; }
+        if (!roomName2) { console.warn("⚠️ Validation failed: Group 2 missing room"); Swal.fire("กรุณาเลือกห้อง (กลุ่ม " + group2Name + ")", "", "warning"); return; }
+        if (!day2 || !startPeriod2 || !endPeriod2) { console.warn("⚠️ Validation failed: Group 2 missing time"); Swal.fire("กรุณาเลือกเวลา (กลุ่ม " + group2Name + ")", "", "warning"); return; }
+
+        // Check Conflict Group 1
+        const conflict1 = {
+            teacher_id: teacherId,
+            room_id: roomId || 0,
+            planid: planId,
+            group_name: group1Name,
+            date: day,
+            start_time: parseInt(startPeriod),
+            end_time: parseInt(endPeriod),
+            term: selectedTerm
+        };
+        const safe1 = await checkConflict(conflict1);
+        if (!safe1) return;
+
+        // Check Conflict Group 2
+        const conflict2 = {
+            teacher_id: teacherId2,
+            room_id: roomId2 || 0,
+            planid: planId2,
+            group_name: group2Name,
+            date: day2,
+            start_time: parseInt(startPeriod2),
+            end_time: parseInt(endPeriod2),
+            term: selectedTerm
+        };
+        const safe2 = await checkConflict(conflict2);
+        if (!safe2) return;
 
         const payload1 = {
             teacher_id: teacherId,
@@ -443,8 +522,9 @@ function Create_Study_Table() {
                 }
             })
             .catch(err => {
-                console.error(err);
-                Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์", "error");
+                console.error("Save Split error:", err);
+                const msg = err.response?.data?.message || err.message || "Unknown error";
+                Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์: " + msg, "error");
             });
     };
 
@@ -526,7 +606,7 @@ function Create_Study_Table() {
         <div className="flex min-h-screen">
             <Sidebar />
             <div className="ml-64 container mx-auto p-6">
-                <button 
+                <button
                     onClick={handleBack}
                     className="mb-6 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white 
                     rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
@@ -534,25 +614,24 @@ function Create_Study_Table() {
                     <ArrowLeft size={20} />
                     <span className="font-medium">ย้อนกลับ</span>
                 </button>
-                
+
                 <h2 className="text-center text-3xl font-bold mb-6">รายวิชาจากแผนการเรียน</h2>
 
                 <div className="bg-white p-6 rounded-xl shadow-md mb-8">
                     <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
                         <div className="flex gap-2">
-                             {availableTerms.map(term => (
+                            {availableTerms.map(term => (
                                 <button
                                     key={term}
                                     onClick={() => setSelectedTerm(term)}
-                                    className={`px-4 py-2 rounded-lg transition-colors duration-200 font-medium ${
-                                        selectedTerm === term 
-                                        ? "bg-blue-600 text-white shadow-md" 
+                                    className={`px-4 py-2 rounded-lg transition-colors duration-200 font-medium ${selectedTerm === term
+                                        ? "bg-blue-600 text-white shadow-md"
                                         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                    }`}
+                                        }`}
                                 >
                                     ภาคเรียนที่ {term}
                                 </button>
-                             ))}
+                            ))}
                         </div>
 
                         {/* Split/Combine Toggle for Paired Groups */}
@@ -560,28 +639,26 @@ function Create_Study_Table() {
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => setIsSplitMode(false)}
-                                    className={`px-4 py-2 rounded-lg transition-colors duration-200 font-medium ${
-                                        !isSplitMode
+                                    className={`px-4 py-2 rounded-lg transition-colors duration-200 font-medium ${!isSplitMode
                                         ? "bg-purple-600 text-white shadow-md"
                                         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                    }`}
+                                        }`}
                                 >
                                     จัดรวม
                                 </button>
                                 <button
                                     onClick={() => setIsSplitMode(true)}
-                                    className={`px-4 py-2 rounded-lg transition-colors duration-200 font-medium ${
-                                        isSplitMode
+                                    className={`px-4 py-2 rounded-lg transition-colors duration-200 font-medium ${isSplitMode
                                         ? "bg-purple-600 text-white shadow-md"
                                         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                    }`}
+                                        }`}
                                 >
                                     จัดแยก
                                 </button>
                             </div>
                         )}
 
-                     <div className="flex gap-2">
+                        <div className="flex gap-2">
                             {!isSplitMode && (
                                 <>
                                     {!isSelectionMode ? (
@@ -667,11 +744,10 @@ function Create_Study_Table() {
                                             setSelectingForGroup(1);
                                             setShowTeacherModal(true);
                                         }}
-                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${
-                                            courseCode
-                                                ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800"
-                                                : "cursor-not-allowed bg-gray-100 text-gray-500"
-                                        }`}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${courseCode
+                                            ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800"
+                                            : "cursor-not-allowed bg-gray-100 text-gray-500"
+                                            }`}
                                     >
                                         {instructorName || "เลือกอาจารย์"}
                                     </div>
@@ -684,11 +760,10 @@ function Create_Study_Table() {
                                             setSelectingForGroup(1);
                                             setShowRoomModal(true);
                                         }}
-                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${
-                                            courseCode
-                                                ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800"
-                                                : "cursor-not-allowed bg-gray-100 text-gray-500"
-                                        }`}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${courseCode
+                                            ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800"
+                                            : "cursor-not-allowed bg-gray-100 text-gray-500"
+                                            }`}
                                     >
                                         {roomName || "เลือกห้องเรียน"}
                                     </div>
@@ -702,9 +777,8 @@ function Create_Study_Table() {
                                         value={day}
                                         onChange={(e) => setDay(e.target.value)}
                                         disabled={!courseCode}
-                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${
-                                            courseCode ? "bg-white text-gray-800" : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                                        }`}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${courseCode ? "bg-white text-gray-800" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
                                     >
                                         <option value="Monday">จันทร์</option>
                                         <option value="Tuesday">อังคาร</option>
@@ -721,9 +795,8 @@ function Create_Study_Table() {
                                         onChange={(e) => setStartPeriod(e.target.value)}
                                         disabled={!courseCode}
                                         placeholder="เช่น 1"
-                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${
-                                            courseCode ? "text-gray-800" : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                                        }`}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${courseCode ? "text-gray-800" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
                                     />
                                 </div>
                                 <div>
@@ -734,9 +807,8 @@ function Create_Study_Table() {
                                         onChange={(e) => setEndPeriod(e.target.value)}
                                         disabled={!courseCode}
                                         placeholder="เช่น 4"
-                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${
-                                            courseCode ? "text-gray-800" : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                                        }`}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${courseCode ? "text-gray-800" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
                                     />
                                 </div>
                             </div>
@@ -746,115 +818,110 @@ function Create_Study_Table() {
                     {/* === COMBINED MODE: Form fields without wrapper === */}
                     {!isSplitMode && (
                         <>
-                    {/* Row 2: Subject Details (Combined Mode) */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">รหัสวิชา</label>
-                            <input
-                                type="text"
-                                value={courseCode}
-                                readOnly
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">ชื่อวิชา</label>
-                            <input
-                                type="text"
-                                value={courseName}
-                                readOnly
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">อาจารย์ผู้สอน</label>
-                            <div
-                                onClick={handleOpenTeacherModal}
-                                className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${
-                                    isSelectionMode && courseCode
-                                        ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800" 
-                                        : "cursor-not-allowed bg-gray-100 text-gray-500"
-                                }`}
-                            >
-                                {instructorName || "เลือกอาจารย์"}
+                            {/* Row 2: Subject Details (Combined Mode) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">รหัสวิชา</label>
+                                    <input
+                                        type="text"
+                                        value={courseCode}
+                                        readOnly
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">ชื่อวิชา</label>
+                                    <input
+                                        type="text"
+                                        value={courseName}
+                                        readOnly
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">อาจารย์ผู้สอน</label>
+                                    <div
+                                        onClick={handleOpenTeacherModal}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${isSelectionMode && courseCode
+                                            ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800"
+                                            : "cursor-not-allowed bg-gray-100 text-gray-500"
+                                            }`}
+                                    >
+                                        {instructorName || "เลือกอาจารย์"}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">ห้องเรียน</label>
+                                    <div
+                                        onClick={handleOpenRoomModal}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${isSelectionMode && courseCode
+                                            ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800"
+                                            : "cursor-not-allowed bg-gray-100 text-gray-500"
+                                            }`}
+                                    >
+                                        {roomName || "เลือกห้องเรียน"}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">ห้องเรียน</label>
-                            <div
-                                onClick={handleOpenRoomModal}
-                                className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${
-                                    isSelectionMode && courseCode
-                                        ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800" 
-                                        : "cursor-not-allowed bg-gray-100 text-gray-500"
-                                }`}
-                            >
-                                {roomName || "เลือกห้องเรียน"}
-                            </div>
-                        </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">วัน</label>
-                            <select
-                                value={day}
-                                onChange={(e) => setDay(e.target.value)}
-                                disabled={!isSelectionMode || !courseCode}
-                                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${
-                                    isSelectionMode && courseCode
-                                        ? "bg-white text-gray-800"
-                                        : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                                }`}
-                            >
-                                <option value="Monday">จันทร์</option>
-                                <option value="Tuesday">อังคาร</option>
-                                <option value="Wednesday">พุธ</option>
-                                <option value="Thursday">พฤหัสบดี</option>
-                                <option value="Friday">ศุกร์</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">คาบที่เริ่ม</label>
-                            <input
-                                type="number"
-                                value={startPeriod}
-                                onChange={(e) => setStartPeriod(e.target.value)}
-                                disabled={!isSelectionMode || !courseCode}
-                                placeholder="เช่น 1"
-                                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${
-                                    isSelectionMode && courseCode
-                                        ? "text-gray-800"
-                                        : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                                }`}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">คาบที่จบ</label>
-                            <input
-                                type="number"
-                                value={endPeriod}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (val === "" || (/^[1-9]$/.test(val) && val.length === 1)) {
-                                        setEndPeriod(val);
-                                    }
-                                }}
-                                disabled={!isSelectionMode || !courseCode}
-                                placeholder="เช่น 4"
-                                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${
-                                    isSelectionMode && courseCode
-                                        ? "text-gray-800"
-                                        : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                                } ${isEndPeriodInvalid() ? "text-red-600 font-bold border-red-500 ring-1 ring-red-500" : ""}`}
-                            />
-                            {isEndPeriodInvalid() && (
-                                <p className="text-xs text-red-500 mt-1">
-                                    เกินระยะเวลาที่กำหนด ({theory + comply} คาบ)
-                                </p>
-                            )}
-                        </div>
-                    </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">วัน</label>
+                                    <select
+                                        value={day}
+                                        onChange={(e) => setDay(e.target.value)}
+                                        disabled={!isSelectionMode || !courseCode}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isSelectionMode && courseCode
+                                            ? "bg-white text-gray-800"
+                                            : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
+                                    >
+                                        <option value="Monday">จันทร์</option>
+                                        <option value="Tuesday">อังคาร</option>
+                                        <option value="Wednesday">พุธ</option>
+                                        <option value="Thursday">พฤหัสบดี</option>
+                                        <option value="Friday">ศุกร์</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">คาบที่เริ่ม</label>
+                                    <input
+                                        type="number"
+                                        value={startPeriod}
+                                        onChange={(e) => setStartPeriod(e.target.value)}
+                                        disabled={!isSelectionMode || !courseCode}
+                                        placeholder="เช่น 1"
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isSelectionMode && courseCode
+                                            ? "text-gray-800"
+                                            : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">คาบที่จบ</label>
+                                    <input
+                                        type="number"
+                                        value={endPeriod}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === "" || (/^[1-9]$/.test(val) && val.length === 1)) {
+                                                setEndPeriod(val);
+                                            }
+                                        }}
+                                        disabled={!isSelectionMode || !courseCode}
+                                        placeholder="เช่น 4"
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isSelectionMode && courseCode
+                                            ? "text-gray-800"
+                                            : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            } ${isEndPeriodInvalid() ? "text-red-600 font-bold border-red-500 ring-1 ring-red-500" : ""}`}
+                                    />
+                                    {isEndPeriodInvalid() && (
+                                        <p className="text-xs text-red-500 mt-1">
+                                            เกินระยะเวลาที่กำหนด ({theory + comply} คาบ)
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
                         </>
                     )}
 
@@ -887,7 +954,7 @@ function Create_Study_Table() {
                                     )}
                                 </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">รหัสวิชา</label>
@@ -905,11 +972,10 @@ function Create_Study_Table() {
                                             setSelectingForGroup(2);
                                             setShowTeacherModal(true);
                                         }}
-                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${
-                                            courseCode2
-                                                ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800"
-                                                : "cursor-not-allowed bg-gray-100 text-gray-500"
-                                        }`}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${courseCode2
+                                            ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800"
+                                            : "cursor-not-allowed bg-gray-100 text-gray-500"
+                                            }`}
                                     >
                                         {instructorName2 || "เลือกอาจารย์"}
                                     </div>
@@ -922,11 +988,10 @@ function Create_Study_Table() {
                                             setSelectingForGroup(2);
                                             setShowRoomModal(true);
                                         }}
-                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${
-                                            courseCode2
-                                                ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800"
-                                                : "cursor-not-allowed bg-gray-100 text-gray-500"
-                                        }`}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 flex items-center min-h-[42px] ${courseCode2
+                                            ? "cursor-pointer hover:bg-gray-50 bg-white text-gray-800"
+                                            : "cursor-not-allowed bg-gray-100 text-gray-500"
+                                            }`}
                                     >
                                         {roomName2 || "เลือกห้องเรียน"}
                                     </div>
@@ -956,9 +1021,8 @@ function Create_Study_Table() {
                                         onChange={(e) => setStartPeriod2(e.target.value)}
                                         disabled={!courseCode2}
                                         placeholder="เช่น 1"
-                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${
-                                            courseCode2 ? "text-gray-800" : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                                        }`}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${courseCode2 ? "text-gray-800" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
                                     />
                                 </div>
                                 <div>
@@ -969,9 +1033,8 @@ function Create_Study_Table() {
                                         onChange={(e) => setEndPeriod2(e.target.value)}
                                         disabled={!courseCode2}
                                         placeholder="เช่น 4"
-                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${
-                                            courseCode2 ? "text-gray-800" : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                                        }`}
+                                        className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${courseCode2 ? "text-gray-800" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
                                     />
                                 </div>
                             </div>
@@ -990,7 +1053,7 @@ function Create_Study_Table() {
                         </div>
                     )}
                 </div>
-    
+
                 {Object.keys(plans).length > 0 ? (
                     <div className="space-y-8">
                         {Object.keys(plans).map((groupKey) => {
@@ -1005,7 +1068,7 @@ function Create_Study_Table() {
                                             </>
                                         )}
                                     </h3>
-    
+
                                     {plans[groupKey].map((plan) => {
                                         if (!plan.sublevel) {
                                             return (
@@ -1026,13 +1089,13 @@ function Create_Study_Table() {
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                {subjects[plan.infoid] && subjects[plan.infoid]["summer"] && subjects[plan.infoid]["summer"].length > 0 ? (
-                                                                    subjects[plan.infoid]["summer"].map((subject) => (
-                                                                        <tr key={subject.subject_id} className="text-center">
-                                                                            <td className="border border-gray-300 p-2 w-[150px]">{subject.course_code}</td>
-                                                                            <td className="border border-gray-300 p-2 w-[300px]">{subject.course_name}</td>
-                                                                            <td className="border border-gray-300 p-2 w-[150px]">{subject.theory}-{subject.comply}-{subject.credit}</td>
-                                                                        </tr>
+                                                                    {subjects[plan.infoid] && subjects[plan.infoid]["summer"] && subjects[plan.infoid]["summer"].length > 0 ? (
+                                                                        subjects[plan.infoid]["summer"].map((subject) => (
+                                                                            <tr key={subject.subject_id} className="text-center">
+                                                                                <td className="border border-gray-300 p-2 w-[150px]">{subject.course_code}</td>
+                                                                                <td className="border border-gray-300 p-2 w-[300px]">{subject.course_name}</td>
+                                                                                <td className="border border-gray-300 p-2 w-[150px]">{subject.theory}-{subject.comply}-{subject.credit}</td>
+                                                                            </tr>
                                                                         ))
                                                                     ) : (
                                                                         <tr>
@@ -1048,11 +1111,12 @@ function Create_Study_Table() {
                                                 </div>
                                             );
                                         }
-    
+
                                         console.log("Rendering plan:", plan);
-                                        const terms = plan.subterm ? plan.subterm.split("-").map(term => term.trim()).filter(t => t === selectedTerm) : [];
-                                        
-                                        if (terms.length === 0) return null;
+                                        // Force render for the selected term
+                                        const terms = [selectedTerm];
+
+                                        if (!selectedTerm) return null;
 
                                         return (
                                             <div key={plan.infoid} className="mb-6">
@@ -1061,11 +1125,11 @@ function Create_Study_Table() {
                                                         - ภาคเรียนที่ {plan.subterm} ปีการศึกษา {plan.year}
                                                     </p>
                                                 </div>
-    
+
                                                 {terms.map(term => (
                                                     <div key={`${plan.infoid}-${term}`} className="mt-4">
                                                         <p className="text-lg font-semibold text-gray-700 text-left">ภาคเรียนที่ {term}</p>
-    
+
                                                         <div className="w-full overflow-x-auto mt-2">
                                                             <table className="w-full border-collapse border border-gray-300">
                                                                 <thead>
@@ -1077,92 +1141,110 @@ function Create_Study_Table() {
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                {subjects[plan.infoid] && subjects[plan.infoid][term] && subjects[plan.infoid][term].length > 0 ? (
-                                                                    subjects[plan.infoid][term]
-                                                                        .filter(subject => {
-                                                                            if (isSplitMode) {
-                                                                                // In split mode: show subject if at least one group hasn't scheduled it yet
-                                                                                const savedForGroup1 = savedSchedules.some(s => s.courseid === subject.courseid && String(s.split_status) === '1');
-                                                                                const savedForGroup2 = savedSchedules.some(s => s.courseid === subject.courseid && String(s.split_status) === '2');
-                                                                                // Hide only if scheduled by BOTH groups
-                                                                                return !(savedForGroup1 && savedForGroup2);
-                                                                            } else {
-                                                                                // Combined mode: hide if already scheduled
-                                                                                return !savedSchedules.some(s => s.courseid === subject.courseid);
-                                                                            }
-                                                                        })
-                                                                        .map((subject) => {
-                                                                        // Check saved status per group
-                                                                        const savedForGroup1 = savedSchedules.some(s => s.courseid === subject.courseid && String(s.split_status) === '1');
-                                                                        const savedForGroup2 = savedSchedules.some(s => s.courseid === subject.courseid && String(s.split_status) === '2');
-                                                                        
-                                                                        // Determine if button should be disabled
-                                                                        const isDisabledInSplit = !selectingForGroup 
-                                                                            || (selectingForGroup === 1 && courseCode) 
-                                                                            || (selectingForGroup === 2 && courseCode2)
-                                                                            || (selectingForGroup === 1 && savedForGroup1)
-                                                                            || (selectingForGroup === 2 && savedForGroup2)
-                                                                            || (selectingForGroup === 2 && String(subject.courseid) === String(courseId));
-                                                                        
-                                                                        const isDisabled = isSplitMode 
-                                                                            ? isDisabledInSplit 
-                                                                            : (!isSelectionMode || (isSelectionMode && courseId && String(subject.courseid) === String(courseId)));
-                                                                        
-                                                                        // Button label
-                                                                        let buttonLabel = "เลือก";
-                                                                        if (isSplitMode) {
-                                                                            if (courseId && String(subject.courseid) === String(courseId)) {
-                                                                                buttonLabel = "เลือกแล้ว (กลุ่ม " + group1Name + ")";
-                                                                            } else if (courseId2 && String(subject.courseid) === String(courseId2)) {
-                                                                                buttonLabel = "เลือกแล้ว (กลุ่ม " + group2Name + ")";
-                                                                            } else if (savedForGroup1 && !savedForGroup2) {
-                                                                                buttonLabel = "กลุ่ม " + group1Name + " จัดแล้ว";
-                                                                            } else if (savedForGroup2 && !savedForGroup1) {
-                                                                                buttonLabel = "กลุ่ม " + group2Name + " จัดแล้ว";
-                                                                            }
-                                                                        } else {
-                                                                            // Combined mode label
-                                                                            if (isSelectionMode && courseId && String(subject.courseid) === String(courseId)) {
-                                                                                buttonLabel = "เลือกแล้ว";
-                                                                            }
-                                                                        }
-                                                                        
-                                                                        return (
-                                                                        <tr key={subject.courseid} className="text-center">
-                                                                            <td className="border border-gray-300 p-2 w-[150px]">{subject.course_code}</td>
-                                                                            <td className="border border-gray-300 p-2 w-[300px]">
-                                                                                {subject.course_name}
-                                                                                {isSplitMode && savedForGroup1 && !savedForGroup2 && (
-                                                                                    <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">กลุ่ม {group1Name} จัดแล้ว</span>
-                                                                                )}
-                                                                                {isSplitMode && savedForGroup2 && !savedForGroup1 && (
-                                                                                    <span className="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">กลุ่ม {group2Name} จัดแล้ว</span>
-                                                                                )}
-                                                                            </td>
-                                                                            <td className="border border-gray-300 p-2 w-[150px]">{subject.theory}-{subject.comply}-{subject.credit}</td>
-                                                                            <td className="border border-gray-300 p-2">
-                                                                                <button
-                                                                                    onClick={() => handleSubjectSelect(subject)}
-                                                                                    disabled={isDisabled}
-                                                                                    className={`px-3 py-1 rounded text-sm transition-all ${
-                                                                                        isDisabled
-                                                                                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                                                                        : "bg-blue-500 text-white hover:bg-blue-600 shadow cursor-pointer"
-                                                                                    }`}
-                                                                                >
-                                                                                    {buttonLabel}
-                                                                                </button>
+                                                                    {subjects[plan.infoid] && subjects[plan.infoid][term] && subjects[plan.infoid][term].length > 0 ? (
+                                                                        subjects[plan.infoid][term]
+                                                                            .filter(subject => {
+                                                                                const relatedSchedules = savedSchedules.filter(s => String(s.courseid) === String(subject.courseid) && String(s.term) === String(selectedTerm));
+
+                                                                                if (isSplitMode) {
+                                                                                    // STRICT FILTER v3
+                                                                                    // 1. Check Combined
+                                                                                    const isCombined = relatedSchedules.some(s => {
+                                                                                        const st = String(s.split_status);
+                                                                                        return st === '0' || st === 'null' || st === 'undefined' || st === '' || st === 'false';
+                                                                                    });
+                                                                                    if (isCombined) return false;
+
+                                                                                    // 2. Check Status Per Group
+                                                                                    const g1 = relatedSchedules.some(s => String(s.split_status) === '1');
+                                                                                    const g2 = relatedSchedules.some(s => String(s.split_status) === '2');
+
+                                                                                    // 3. Selection Mode Logic
+                                                                                    if (selectingForGroup) {
+                                                                                        if (String(selectingForGroup) === '1' && g1) return false;
+                                                                                        if (String(selectingForGroup) === '2' && g2) return false;
+                                                                                    } else {
+                                                                                        // 4. View Mode: Hide if ANY group is done
+                                                                                        if (g1 || g2) return false;
+                                                                                    }
+
+                                                                                    return true;
+                                                                                } else {
+                                                                                    // Combined Mode: Hide if ANY schedule exists
+                                                                                    return relatedSchedules.length === 0;
+                                                                                }
+                                                                            })
+                                                                            .map((subject) => {
+                                                                                // Check saved status per group
+                                                                                const savedForGroup1 = savedSchedules.some(s => String(s.courseid) === String(subject.courseid) && String(s.split_status) === '1' && String(s.term) === String(selectedTerm));
+                                                                                const savedForGroup2 = savedSchedules.some(s => String(s.courseid) === String(subject.courseid) && String(s.split_status) === '2' && String(s.term) === String(selectedTerm));
+
+                                                                                // Determine if button should be disabled
+                                                                                const isDisabledInSplit = !selectingForGroup
+                                                                                    || (selectingForGroup === 1 && courseCode)
+                                                                                    || (selectingForGroup === 2 && courseCode2)
+                                                                                    || (selectingForGroup === 1 && savedForGroup1)
+                                                                                    || (selectingForGroup === 2 && savedForGroup2)
+                                                                                    || (selectingForGroup === 2 && String(subject.courseid) === String(courseId));
+
+                                                                                const isDisabled = isSplitMode
+                                                                                    ? isDisabledInSplit
+                                                                                    : (!isSelectionMode || (isSelectionMode && courseId && String(subject.courseid) === String(courseId)));
+
+                                                                                // Button label
+                                                                                let buttonLabel = "เลือก";
+                                                                                if (isSplitMode) {
+                                                                                    if (courseId && String(subject.courseid) === String(courseId)) {
+                                                                                        buttonLabel = "เลือกแล้ว (กลุ่ม " + group1Name + ")";
+                                                                                    } else if (courseId2 && String(subject.courseid) === String(courseId2)) {
+                                                                                        buttonLabel = "เลือกแล้ว (กลุ่ม " + group2Name + ")";
+                                                                                    } else if (savedForGroup1 && !savedForGroup2) {
+                                                                                        buttonLabel = "กลุ่ม " + group1Name + " จัดแล้ว";
+                                                                                    } else if (savedForGroup2 && !savedForGroup1) {
+                                                                                        buttonLabel = "กลุ่ม " + group2Name + " จัดแล้ว";
+                                                                                    }
+                                                                                } else {
+                                                                                    // Combined mode label
+                                                                                    if (isSelectionMode && courseId && String(subject.courseid) === String(courseId)) {
+                                                                                        buttonLabel = "เลือกแล้ว";
+                                                                                    }
+                                                                                }
+
+                                                                                return (
+                                                                                    <tr key={subject.courseid} className="text-center">
+                                                                                        <td className="border border-gray-300 p-2 w-[150px]">{subject.course_code}</td>
+                                                                                        <td className="border border-gray-300 p-2 w-[300px]">
+                                                                                            {subject.course_name}
+                                                                                            {isSplitMode && savedForGroup1 && !savedForGroup2 && (
+                                                                                                <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">กลุ่ม {group1Name} จัดแล้ว</span>
+                                                                                            )}
+                                                                                            {isSplitMode && savedForGroup2 && !savedForGroup1 && (
+                                                                                                <span className="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">กลุ่ม {group2Name} จัดแล้ว</span>
+                                                                                            )}
+                                                                                        </td>
+                                                                                        <td className="border border-gray-300 p-2 w-[150px]">{subject.theory}-{subject.comply}-{subject.credit}</td>
+                                                                                        <td className="border border-gray-300 p-2">
+                                                                                            <button
+                                                                                                onClick={() => handleSubjectSelect(subject)}
+                                                                                                disabled={isDisabled}
+                                                                                                className={`px-3 py-1 rounded text-sm transition-all ${isDisabled
+                                                                                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                                                                                    : "bg-blue-500 text-white hover:bg-blue-600 shadow cursor-pointer"
+                                                                                                    }`}
+                                                                                            >
+                                                                                                {buttonLabel}
+                                                                                            </button>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                );
+                                                                            })
+                                                                    ) : (
+                                                                        <tr>
+                                                                            <td colSpan="4" className="text-center text-gray-500 border border-gray-300 px-4 py-2">
+                                                                                ❌ ไม่พบข้อมูลรายวิชา
                                                                             </td>
                                                                         </tr>
-                                                                        );
-                                                                    })
-                                                                ) : (
-                                                                    <tr>
-                                                                        <td colSpan="4" className="text-center text-gray-500 border border-gray-300 px-4 py-2">
-                                                                            ❌ ไม่พบข้อมูลรายวิชา
-                                                                        </td>
-                                                                    </tr>
-                                                                )}
+                                                                    )}
                                                                 </tbody>
                                                             </table>
                                                         </div>
@@ -1201,120 +1283,120 @@ function Create_Study_Table() {
                                     {savedSchedules
                                         .filter(schedule => String(schedule.term) === String(selectedTerm))
                                         .map((schedule) => (
-                                        <tr key={schedule.field_id} className="text-center hover:bg-gray-50">
-                                            <td className="border border-gray-300 p-2">{schedule.course_code}</td>
-                                            <td className="border border-gray-300 p-2 text-left">{schedule.course_name}</td>
-                                            
-                                            {/* Teacher - Inline Edit */}
-                                            <td className="border border-gray-300 p-2">
-                                                {editingId === schedule.field_id ? (
-                                                    <div
-                                                        onClick={() => setShowTeacherModal(true)}
-                                                        className="cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-blue-300 bg-blue-50 text-gray-800 min-h-[32px] flex items-center justify-center"
-                                                    >
-                                                        {editingData.teacher_name || "เลือกอาจารย์"}
-                                                    </div>
-                                                ) : (
-                                                    schedule.teacher_name || "-"
-                                                )}
-                                            </td>
-                                            
-                                            {/* Room - Inline Edit */}
-                                            <td className="border border-gray-300 p-2">
-                                                {editingId === schedule.field_id ? (
-                                                    <div
-                                                        onClick={() => setShowRoomModal(true)}
-                                                        className="cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-blue-300 bg-blue-50 text-gray-800 min-h-[32px] flex items-center justify-center"
-                                                    >
-                                                        {editingData.room_name || "เลือกห้อง"}
-                                                    </div>
-                                                ) : (
-                                                    schedule.room_name || "-"
-                                                )}
-                                            </td>
-                                            
-                                            {/* Day - Inline Edit */}
-                                            <td className="border border-gray-300 p-2">
-                                                {editingId === schedule.field_id ? (
-                                                    <select
-                                                        value={editingData.date}
-                                                        onChange={(e) => setEditingData({...editingData, date: e.target.value})}
-                                                        className="w-full border border-gray-300 rounded px-2 py-1 bg-white text-gray-800"
-                                                    >
-                                                        <option value="Monday">จันทร์</option>
-                                                        <option value="Tuesday">อังคาร</option>
-                                                        <option value="Wednesday">พุธ</option>
-                                                        <option value="Thursday">พฤหัสบดี</option>
-                                                        <option value="Friday">ศุกร์</option>
-                                                    </select>
-                                                ) : (
-                                                    dayMap[schedule.date] || schedule.date
-                                                )}
-                                            </td>
-                                            
-                                            {/* Period - Inline Edit */}
-                                            <td className="border border-gray-300 p-2">
-                                                {editingId === schedule.field_id ? (
-                                                    <div className="flex gap-1 items-center justify-center">
-                                                        <input
-                                                            type="number"
-                                                            value={editingData.start_time}
-                                                            onChange={(e) => setEditingData({...editingData, start_time: e.target.value})}
-                                                            className="w-14 border border-gray-300 rounded px-2 py-1 text-center"
-                                                        />
-                                                        <span>-</span>
-                                                        <input
-                                                            type="number"
-                                                            value={editingData.end_time}
-                                                            onChange={(e) => setEditingData({...editingData, end_time: e.target.value})}
-                                                            className="w-14 border border-gray-300 rounded px-2 py-1 text-center"
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    `${schedule.start_time}-${schedule.end_time}`
-                                                )}
-                                            </td>
-                                            
-                                            <td className="border border-gray-300 p-2">{schedule.group_name}</td>
-                                            
-                                            {/* Actions */}
-                                            <td className="border border-gray-300 p-2">
-                                                <div className="flex gap-2 justify-center">
+                                            <tr key={schedule.field_id} className="text-center hover:bg-gray-50">
+                                                <td className="border border-gray-300 p-2">{schedule.course_code}</td>
+                                                <td className="border border-gray-300 p-2 text-left">{schedule.course_name}</td>
+
+                                                {/* Teacher - Inline Edit */}
+                                                <td className="border border-gray-300 p-2">
                                                     {editingId === schedule.field_id ? (
-                                                        <>
-                                                            <button
-                                                                onClick={handleSaveEdit}
-                                                                className="px-3 py-1 bg-white text-green-600 border border-green-600 rounded hover:bg-green-600 hover:text-white text-sm transition-all"
-                                                            >
-                                                                บันทึก
-                                                            </button>
-                                                            <button
-                                                                onClick={handleCancelEdit}
-                                                                className="px-3 py-1 bg-white text-gray-600 border border-gray-500 rounded hover:bg-gray-600 hover:text-white text-sm transition-all"
-                                                            >
-                                                                ยกเลิก
-                                                            </button>
-                                                        </>
+                                                        <div
+                                                            onClick={() => setShowTeacherModal(true)}
+                                                            className="cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-blue-300 bg-blue-50 text-gray-800 min-h-[32px] flex items-center justify-center"
+                                                        >
+                                                            {editingData.teacher_name || "เลือกอาจารย์"}
+                                                        </div>
                                                     ) : (
-                                                        <>
-                                                            <button
-                                                                onClick={() => handleEdit(schedule)}
-                                                                className="px-3 py-1 bg-white text-blue-600 border border-blue-600 rounded hover:bg-blue-600 hover:text-white text-sm transition-all"
-                                                            >
-                                                                แก้ไข
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDelete(schedule.field_id)}
-                                                                className="px-3 py-1 bg-white text-red-600 border border-red-600 rounded hover:bg-red-600 hover:text-white text-sm transition-all"
-                                                            >
-                                                                ลบ
-                                                            </button>
-                                                        </>
+                                                        schedule.teacher_name || "-"
                                                     )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                </td>
+
+                                                {/* Room - Inline Edit */}
+                                                <td className="border border-gray-300 p-2">
+                                                    {editingId === schedule.field_id ? (
+                                                        <div
+                                                            onClick={() => setShowRoomModal(true)}
+                                                            className="cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-blue-300 bg-blue-50 text-gray-800 min-h-[32px] flex items-center justify-center"
+                                                        >
+                                                            {editingData.room_name || "เลือกห้อง"}
+                                                        </div>
+                                                    ) : (
+                                                        schedule.room_name || "-"
+                                                    )}
+                                                </td>
+
+                                                {/* Day - Inline Edit */}
+                                                <td className="border border-gray-300 p-2">
+                                                    {editingId === schedule.field_id ? (
+                                                        <select
+                                                            value={editingData.date}
+                                                            onChange={(e) => setEditingData({ ...editingData, date: e.target.value })}
+                                                            className="w-full border border-gray-300 rounded px-2 py-1 bg-white text-gray-800"
+                                                        >
+                                                            <option value="Monday">จันทร์</option>
+                                                            <option value="Tuesday">อังคาร</option>
+                                                            <option value="Wednesday">พุธ</option>
+                                                            <option value="Thursday">พฤหัสบดี</option>
+                                                            <option value="Friday">ศุกร์</option>
+                                                        </select>
+                                                    ) : (
+                                                        dayMap[schedule.date] || schedule.date
+                                                    )}
+                                                </td>
+
+                                                {/* Period - Inline Edit */}
+                                                <td className="border border-gray-300 p-2">
+                                                    {editingId === schedule.field_id ? (
+                                                        <div className="flex gap-1 items-center justify-center">
+                                                            <input
+                                                                type="number"
+                                                                value={editingData.start_time}
+                                                                onChange={(e) => setEditingData({ ...editingData, start_time: e.target.value })}
+                                                                className="w-14 border border-gray-300 rounded px-2 py-1 text-center"
+                                                            />
+                                                            <span>-</span>
+                                                            <input
+                                                                type="number"
+                                                                value={editingData.end_time}
+                                                                onChange={(e) => setEditingData({ ...editingData, end_time: e.target.value })}
+                                                                className="w-14 border border-gray-300 rounded px-2 py-1 text-center"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        `${schedule.start_time}-${schedule.end_time}`
+                                                    )}
+                                                </td>
+
+                                                <td className="border border-gray-300 p-2">กลุ่ม {schedule.group_name}</td>
+
+                                                {/* Actions */}
+                                                <td className="border border-gray-300 p-2">
+                                                    <div className="flex gap-2 justify-center">
+                                                        {editingId === schedule.field_id ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={handleSaveEdit}
+                                                                    className="px-3 py-1 bg-white text-green-600 border border-green-600 rounded hover:bg-green-600 hover:text-white text-sm transition-all"
+                                                                >
+                                                                    บันทึก
+                                                                </button>
+                                                                <button
+                                                                    onClick={handleCancelEdit}
+                                                                    className="px-3 py-1 bg-white text-gray-600 border border-gray-500 rounded hover:bg-gray-600 hover:text-white text-sm transition-all"
+                                                                >
+                                                                    ยกเลิก
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleEdit(schedule)}
+                                                                    className="px-3 py-1 bg-white text-blue-600 border border-blue-600 rounded hover:bg-blue-600 hover:text-white text-sm transition-all"
+                                                                >
+                                                                    แก้ไข
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDelete(schedule.field_id)}
+                                                                    className="px-3 py-1 bg-white text-red-600 border border-red-600 rounded hover:bg-red-600 hover:text-white text-sm transition-all"
+                                                                >
+                                                                    ลบ
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
                                 </tbody>
                             </table>
                         </div>
@@ -1325,14 +1407,14 @@ function Create_Study_Table() {
             {/* Teacher Modal */}
             <AnimatePresence>
                 {showTeacherModal && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
                         onClick={() => setShowTeacherModal(false)}
                     >
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -1349,7 +1431,7 @@ function Create_Study_Table() {
                             <div className="p-4 overflow-y-auto flex-1 custom-scrollbar">
                                 <ul className="space-y-2">
                                     {teachers.map((teacher) => (
-                                        <li 
+                                        <li
                                             key={teacher.teacher_id}
                                             onClick={() => handleTeacherSelect(teacher)}
                                             className="p-3 border border-gray-100 rounded-lg hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition-all flex justify-between items-center group"
@@ -1372,14 +1454,14 @@ function Create_Study_Table() {
             {/* Room Modal */}
             <AnimatePresence>
                 {showRoomModal && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
                         onClick={() => setShowRoomModal(false)}
                     >
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -1396,7 +1478,7 @@ function Create_Study_Table() {
                             <div className="p-4 overflow-y-auto flex-1 custom-scrollbar">
                                 <ul className="space-y-2">
                                     {rooms.map((room) => (
-                                        <li 
+                                        <li
                                             key={room.room_id}
                                             onClick={() => handleRoomSelect(room)}
                                             className="p-3 border border-gray-100 rounded-lg hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition-all flex justify-between items-center group"

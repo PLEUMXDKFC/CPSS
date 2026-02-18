@@ -145,6 +145,21 @@ function Teacheradd() {
     e.preventDefault();
     setIsLoading(true);
 
+    // ตรวจสอบข้อมูลซ้ำ (client-side)
+    const trimFname = formData.fname.trim();
+    const trimLname = formData.lname.trim();
+    const isDuplicate = teachers.some(
+      (t) =>
+        t.fname.trim().toLowerCase() === trimFname.toLowerCase() &&
+        t.lname.trim().toLowerCase() === trimLname.toLowerCase() &&
+        (!editingId || t.teacher_id !== editingId)
+    );
+    if (isDuplicate) {
+      showMessage("error", "ข้อมูลครูผู้สอนนี้มีอยู่ในระบบแล้ว (ชื่อ-นามสกุลซ้ำ)");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       if (editingId) {
         const payload = {
@@ -208,8 +223,8 @@ function Teacheradd() {
               <div
                 role="alert"
                 className={`mb-4 p-4 rounded-md ${message.type === "success"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
                   }`}
               >
                 {message.text}

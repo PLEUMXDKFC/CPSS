@@ -33,6 +33,18 @@ try {
         exit;
     }
 
+    // ตรวจสอบข้อมูลซ้ำ (ชื่อห้อง + ประเภทห้อง)
+    $checkSql = "SELECT COUNT(*) FROM room WHERE room_name = :room_name AND room_type = :room_type";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->bindParam(':room_name', $room_name);
+    $checkStmt->bindParam(':room_type', $room_type);
+    $checkStmt->execute();
+    if ($checkStmt->fetchColumn() > 0) {
+        http_response_code(409);
+        echo json_encode(['status' => 'error', 'message' => 'ข้อมูลห้องเรียนนี้มีอยู่ในระบบแล้ว (ชื่อห้องและประเภทห้องซ้ำ)']);
+        exit();
+    }
+
     $sql = "INSERT INTO room (room_name, room_type)
             VALUES (:room_name, :room_type)";
     $stmt = $conn->prepare($sql);

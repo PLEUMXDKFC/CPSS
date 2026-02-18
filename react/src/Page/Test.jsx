@@ -73,6 +73,7 @@ const CPSSHomepage = () => {
           <ul className="hidden md:flex gap-6 text-lg">
             <li><Link to="/" className="text-blue-600 hover:text-blue-600">หน้าหลัก</Link></li>
             <li><Link to="/intoviewplan" className="hover:text-blue-600">แผนการเรียน</Link></li>
+            <li><Link to="/Studyhistorytable" className="hover:text-blue-600">ตารางเรียน (ทั่วไป)</Link></li>
             <li><Link to="/LoginPage" className="hover:text-blue-600">เข้าสู่ระบบ</Link></li>
           </ul>
         </div>
@@ -83,6 +84,7 @@ const CPSSHomepage = () => {
             <ul className="flex flex-col gap-4 text-lg">
               <li><Link to="/" onClick={() => setMenuOpen(false)}>หน้าหลัก</Link></li>
               <li><Link to="/intoviewplan" onClick={() => setMenuOpen(false)}>แผนการเรียน</Link></li>
+              <li><Link to="/Studyhistorytable" onClick={() => setMenuOpen(false)}>ตารางเรียน (ทั่วไป)</Link></li>
               <li><Link to="/LoginPage" onClick={() => setMenuOpen(false)}>เข้าสู่ระบบ</Link></li>
             </ul>
           </div>

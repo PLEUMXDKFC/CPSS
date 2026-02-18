@@ -45,6 +45,19 @@ try {
         exit();
     }
 
+    // ตรวจสอบข้อมูลซ้ำ (ชื่อ + นามสกุล ยกเว้นตัวเอง)
+    $checkSql = "SELECT COUNT(*) FROM teacher_info WHERE fname = :fname AND lname = :lname AND teacher_id != :teacher_id";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->bindParam(':fname', $data->fname);
+    $checkStmt->bindParam(':lname', $data->lname);
+    $checkStmt->bindParam(':teacher_id', $data->teacher_id, PDO::PARAM_INT);
+    $checkStmt->execute();
+    if ($checkStmt->fetchColumn() > 0) {
+        http_response_code(409);
+        echo json_encode(['status' => 'error', 'message' => 'ข้อมูลครูผู้สอนนี้มีอยู่ในระบบแล้ว (ชื่อ-นามสกุลซ้ำ)']);
+        exit();
+    }
+
     // เตรียม SQL
     $sql = "UPDATE teacher_info 
             SET prefix = :prefix, fname = :fname, lname = :lname, department = :department
