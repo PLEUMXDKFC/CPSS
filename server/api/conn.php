@@ -2,7 +2,7 @@
     $servername = "localhost";
     $username="root";
     $password="";
-    $dbname="cpss";
+    $dbname="ctnphrae_subject";
 
     try{
         $conn =new PDO("mysql:host=$servername;dbname=$dbname",$username,$password);

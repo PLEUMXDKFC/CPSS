@@ -132,7 +132,7 @@ const TeacherHistoryTable = () => {
     useEffect(() => {
         if (location.state) {
             setFilterTeacher(location.state.teacher_id);
-            // if (location.state.term) setFilterTerm(location.state.term);
+            // if (location.state.term) setFilterTerm(location.state.term); // Disable setting term from navigation
             if (location.state.year) setFilterYear(location.state.year);
             if (location.state.planid) setFilterPlanId(location.state.planid);
             if (location.state.infoid) setFilterInfoId(location.state.infoid);
@@ -171,6 +171,9 @@ const TeacherHistoryTable = () => {
     };
 
     const teacherInfo = data.length > 0 ? data[0] : null;
+    const stateTeacher = location.state?.teacher;
+    const currentTeacherName = teacherInfo?.teacher_name || (stateTeacher ? `${stateTeacher.prefix} ${stateTeacher.fname} ${stateTeacher.lname}`.trim() : "");
+    const currentDepartment = teacherInfo?.department || stateTeacher?.department || "";
 
     const fetchData = useCallback(async () => {
         const teacherIdNum = Number(filterTeacher);
@@ -183,6 +186,15 @@ const TeacherHistoryTable = () => {
         setLoading(true);
         setError(null);
         try {
+            console.log("Fetching schedule:", {
+                teacher_id: teacherIdNum,
+                term:       filterTerm,
+                year:       filterYear,
+                planid:     filterPlanId,
+                infoid:     filterInfoId,
+                group_name: filterGroupName,
+            });
+
             const rows = await api.getSchedule({
                 teacher_id: teacherIdNum,
                 term:       filterTerm,
@@ -191,6 +203,8 @@ const TeacherHistoryTable = () => {
                 infoid:     filterInfoId,
                 group_name: filterGroupName,
             });
+
+            console.log("Fetched Rows:", rows);
 
             const normalized = (Array.isArray(rows) ? rows : []).map((r) => ({
                 ...r,
@@ -216,7 +230,7 @@ const TeacherHistoryTable = () => {
         }
     }, [filterTeacher, filterTerm, filterYear, filterPlanId, filterInfoId, filterGroupName]);
 
-    useEffect(() => { fetchData(); }, []); // eslint-disable-line
+    useEffect(() => { fetchData(); }, [fetchData]);
 
     // ── render แต่ละแถววัน ────────────────────────────────────────────────
     const renderRow = (dayKey, dayLabel) => {
@@ -338,6 +352,31 @@ const TeacherHistoryTable = () => {
                         <ArrowLeft size={20} />
                         <span className="font-medium">ย้อนกลับ</span>
                     </button>
+                    <div className="flex items-center gap-2 mb-6">
+                        <span className="font-semibold text-gray-700">เลือกเทอม:</span>
+                        <button 
+                            onClick={() => {
+                                setFilterTerm("1");
+                                console.log("User selected Term: 1");
+                            }}
+                            className={`px-4 py-2 rounded-lg border transition-all ${filterTerm === "1" ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}
+                        >
+                            เทอม 1
+                        </button>
+                        <button 
+                            onClick={() => {
+                                setFilterTerm("2");
+                                console.log("User selected Term: 2");
+                            }}
+                            className={`px-4 py-2 rounded-lg border transition-all ${filterTerm === "2" ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}
+                        >
+                            เทอม 2
+                        </button>
+                        <span className="ml-2 text-sm font-semibold text-blue-600">
+                            (กำลังแสดงผล: {filterTerm === "summer" ? "ฤดูร้อน" : `เทอม ${filterTerm}`})
+                        </span>
+                    </div>
+
                     <button onClick={handlePrint} className="mb-6 flex items-center gap-2 px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
                         <Printer size={20} />
                         <span className="font-medium">พิมพ์ตาราง</span>
@@ -361,8 +400,8 @@ const TeacherHistoryTable = () => {
                         <p className="text-xl font-bold">วิทยาลัยเทคนิคแพร่</p>
                         <p className="text-base mt-1">
                             ตารางสอนครู&nbsp;
-                            ชื่อ......{teacherInfo?.teacher_name || ""}............
-                            แผนกวิชา......{teacherInfo?.department || ""}.......
+                            ชื่อ......{currentTeacherName}............
+                            แผนกวิชา......{currentDepartment}.......
                         </p>
                         <p className="text-base mt-0.5">
                             ภาคเรียนที่..........{filterTerm}...............&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

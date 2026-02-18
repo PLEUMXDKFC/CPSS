@@ -178,6 +178,9 @@ const RoomHistoryTable = () => {
     };
 
     const roomInfo = data.length > 0 ? data[0] : null;
+    const stateRoom = location.state?.room;
+    const currentRoomName = roomInfo?.room_name || stateRoom?.room_name || "";
+    const currentRoomType = roomInfo?.room_type || stateRoom?.room_type || "";
 
     const fetchData = useCallback(async () => {
         const roomIdNum = Number(filterRoom);
@@ -190,6 +193,15 @@ const RoomHistoryTable = () => {
         setLoading(true);
         setError(null);
         try {
+            console.log("Fetching Room Schedule:", {
+                room_id:    roomIdNum,
+                term:       filterTerm,
+                year:       filterYear,
+                planid:     filterPlanId,
+                infoid:     filterInfoId,
+                group_name: filterGroupName,
+            });
+
             const rows = await api.getSchedule({
                 room_id:    roomIdNum,
                 term:       filterTerm,
@@ -198,6 +210,8 @@ const RoomHistoryTable = () => {
                 infoid:     filterInfoId,
                 group_name: filterGroupName,
             });
+            
+            console.log("Fetched Rows:", rows);
 
             const normalized = (Array.isArray(rows) ? rows : []).map((r) => ({
                 ...r,
@@ -220,7 +234,7 @@ const RoomHistoryTable = () => {
         }
     }, [filterRoom, filterTerm, filterYear, filterPlanId, filterInfoId, filterGroupName]);
 
-    useEffect(() => { fetchData(); }, []); // eslint-disable-line
+    useEffect(() => { fetchData(); }, [fetchData]);
 
     // ── render แต่ละแถววัน ────────────────────────────────────────────────
     const renderRow = (dayKey, dayLabel) => {
@@ -342,6 +356,32 @@ const RoomHistoryTable = () => {
                         <ArrowLeft size={20} />
                         <span className="font-medium">ย้อนกลับ</span>
                     </button>
+                    
+                    <div className="flex items-center gap-2 mb-6">
+                        <span className="font-semibold text-gray-700">เลือกเทอม:</span>
+                        <button 
+                            onClick={() => {
+                                setFilterTerm("1");
+                                console.log("User selected Term: 1");
+                            }}
+                            className={`px-4 py-2 rounded-lg border transition-all ${filterTerm === "1" ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}
+                        >
+                            เทอม 1
+                        </button>
+                        <button 
+                            onClick={() => {
+                                setFilterTerm("2");
+                                console.log("User selected Term: 2");
+                            }}
+                            className={`px-4 py-2 rounded-lg border transition-all ${filterTerm === "2" ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}
+                        >
+                            เทอม 2
+                        </button>
+                        <span className="ml-2 text-sm font-semibold text-blue-600">
+                            (กำลังแสดงผล: {filterTerm === "summer" ? "ฤดูร้อน" : `เทอม ${filterTerm}`})
+                        </span>
+                    </div>
+
                     <button onClick={handlePrint} className="mb-6 flex items-center gap-2 px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
                         <Printer size={20} />
                         <span className="font-medium">พิมพ์ตาราง</span>
@@ -365,8 +405,8 @@ const RoomHistoryTable = () => {
                         <p className="text-xl font-bold">วิทยาลัยเทคนิคแพร่</p>
                         <p className="text-base mt-1">
                             ตารางการใช้ห้อง&nbsp;
-                            ห้อง......{roomInfo?.room_name || ""}............
-                            ชนิด......{roomInfo?.room_type || ""}.......
+                            ห้อง......{currentRoomName}............
+                            ชนิด......{currentRoomType}.......
                         </p>
                         <p className="text-base mt-0.5">
                             ภาคเรียนที่..........{filterTerm}...............&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

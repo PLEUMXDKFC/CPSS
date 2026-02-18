@@ -26,7 +26,7 @@ function Sidebar() {
       "/makeplan", "/intoplan", "/plan", "/add-subject",
       "/intocheckplan", "/checkplan"
     ];
-    const tablePaths = ["/Into_list_of_subject","/List_of_subject","/In_list_of_subject","/Teacheradd","/Studentroomadd","/Into_Create_Table", "/Select_table", "/Create_Study_Table", "/IntoTeacherSchedule", "/TeacherSchedule", "/IntoRoomSchedule", "/RoomSchedule", "/Studyhistorytable", "/IntoStudyHistoryTable", "/HistoryTable"];
+    const tablePaths = ["/Into_list_of_subject","/List_of_subject","/In_list_of_subject","/Teacheradd","/Studentroomadd","/Into_Create_Table", "/Select_table", "/Create_Study_Table", "/IntoTeacherSchedule", "/TeacherSchedule","/TeacherYearSchedule","/TeacherGroupSchedule","/TeacherHistoryTable", "/IntoRoomSchedule", "/RoomSchedule","RoomYearSchedule","RoomGroupSchedule","RoomHistoryTable", "/Studyhistorytable", "/IntoStudyHistoryTable", "/HistoryTable"];
     const reportPaths = ["/intoprintplan", "/PrintPlan20"];
     
     // เช็คว่า path ปัจจุบันตรงกับ section ไหน
@@ -264,11 +264,14 @@ function Sidebar() {
                   </Link>
                 </li>
                 <li>
-                  <Link
+                    <Link
                     to="/IntoTeacherSchedule"
                     className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
                       location.pathname.includes("/IntoTeacherSchedule") ||
-                      location.pathname.includes("/TeacherSchedule")
+                      location.pathname.includes("/TeacherSchedule") ||
+                      location.pathname.includes("/TeacherYearSchedule") ||
+                      location.pathname.includes("/TeacherGroupSchedule") ||
+                      location.pathname.includes("/TeacherHistoryTable")
                         ? "bg-white/20"
                         : ""
                     }`}
@@ -282,7 +285,10 @@ function Sidebar() {
                     to="/IntoRoomSchedule"
                     className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
                       location.pathname.includes("/IntoRoomSchedule") ||
-                      location.pathname.includes("/RoomSchedule")
+                      location.pathname.includes("/RoomSchedule") ||
+                      location.pathname.includes("/RoomYearSchedule") ||
+                      location.pathname.includes("/RoomGroupSchedule") ||
+                      location.pathname.includes("/RoomHistoryTable")
                         ? "bg-white/20"
                         : ""
                     }`}

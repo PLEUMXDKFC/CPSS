@@ -39,6 +39,11 @@ import IntoStudyHistoryTable from './Page/IntoStudyHistoryTable';
 import Studyhistorytable from './Page/Studyhistorytable';
 import TeacherHistoryTable from './Page/TeacherHistoryTable';
 import RoomHistoryTable from './Page/RoomHistoryTable';
+import TeacherYearSchedule from './Page/TeacherYearSchedule';
+
+import TeacherGroupSchedule from './Page/TeacherGroupSchedule';
+import RoomYearSchedule from './Page/RoomYearSchedule';
+import RoomGroupSchedule from './Page/RoomGroupSchedule';
 
 function App() {
   return (
@@ -75,6 +80,10 @@ function App() {
         <Route path="/RoomHistoryTable/:room_id" element={<RoomHistoryTable />} />
         <Route path="/IntoTeacherSchedule" element={<IntoTeacherSchedule />} />
         <Route path="/IntoRoomSchedule" element={<IntoRoomSchedule />} />
+        <Route path="/TeacherYearSchedule" element={<TeacherYearSchedule />} />
+        <Route path="/TeacherGroupSchedule" element={<TeacherGroupSchedule />} />
+        <Route path="/RoomYearSchedule" element={<RoomYearSchedule />} />
+        <Route path="/RoomGroupSchedule" element={<RoomGroupSchedule />} />
         <Route path="/Studyhistorytable" element={<Studyhistorytable />} />
         <Route path="/HistoryTable/:planid" element={<HistoryTable />} />
         <Route path="/IntoStudyHistoryTable" element={<IntoStudyHistoryTable />} />
