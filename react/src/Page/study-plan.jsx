@@ -44,7 +44,7 @@ const StudyPlan = () => {
                 {/* ปุ่มย้อนกลับ */}
                 <button 
                     onClick={handleBack} 
-                    className="mb-6 flex items-center gap-2 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 
+                    className="mb-6 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white 
                     rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                 >
                     <ArrowLeft size={20} />
@@ -57,7 +57,7 @@ const StudyPlan = () => {
 
                 {/* ปุ่มเพิ่มข้อมูล */}
                 <button 
-                    className="mb-6 flex items-center gap-2 px-4 py-2 text-white bg-green-600 hover:bg-green-700 
+                    className="mb-6 flex items-center gap-2 px-4 py-2 bg-white text-green-600 border border-green-600 hover:bg-green-600 hover:text-white 
                     rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                 >
                     <span className="font-medium">เพิ่มข้อมูลกลุ่มการเรียนและปีการศึกษา</span>
@@ -91,13 +91,13 @@ const StudyPlan = () => {
                                             <div className="flex space-x-1 justify-center">
                                                 <button 
                                                     onClick={() => navigate(`/edit-group/${group.infoid}`)}
-                                                    className="bg-blue-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-blue-600 cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2"
+                                                    className="bg-white text-blue-600 border border-blue-600 px-4 py-2 text-sm rounded-lg hover:bg-blue-600 hover:text-white cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2"
                                                 >
                                                     <Edit size={16} /> แก้ไข
                                                 </button>
                                                 <button 
                                                     onClick={() => handleDelete(group.infoid)}
-                                                    className="bg-red-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-red-600 cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2"
+                                                    className="bg-white text-red-600 border border-red-600 px-4 py-2 text-sm rounded-lg hover:bg-red-600 hover:text-white cursor-pointer transition duration-300 ease-in-out flex items-center gap-x-2"
                                                 >
                                                     <Trash2 size={16} /> ลบ
                                                 </button>

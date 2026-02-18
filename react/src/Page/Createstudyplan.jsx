@@ -296,14 +296,14 @@ function Createstudyplan() {
                         </div>
 
                         <div className="text-center mt-4 mb-4">
-                            <button type="submit" className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 cursor-pointer transition duration-300 ease-in-out">
+                            <button type="submit" className="bg-white text-green-600 border border-green-600 px-6 py-2 rounded-lg hover:bg-green-600 hover:text-white cursor-pointer transition duration-300 ease-in-out">
                                 บันทึก
                             </button>
 
                             <button
                                 type="button"
                                 onClick={handleCancel}
-                                className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 cursor-pointer transition duration-300 ease-in-out ml-4"
+                                className="bg-white text-red-600 border border-red-600 px-6 py-2 rounded-lg hover:bg-red-600 hover:text-white cursor-pointer transition duration-300 ease-in-out ml-4"
                             >
                                 ยกเลิก
                             </button>
@@ -387,37 +387,37 @@ function Createstudyplan() {
                                                         <button
                                                             type="button"
                                                             onClick={handleEditSubmit}
-                                                            className="bg-green-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-green-600 transition flex items-center gap-x-2"
+                                                            className="bg-white text-green-600 border border-green-600 px-4 py-2 text-sm rounded-lg hover:bg-green-600 hover:text-white transition flex items-center justify-center gap-x-2"
                                                         >
-                                                            <LucideCheck size={16} /> บันทึก
+                                                            บันทึก
                                                         </button>
                                                         <button
                                                             type="button"
                                                             onClick={handleCancelEdit}
-                                                            className="bg-gray-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-gray-600 transition flex items-center gap-x-2"
+                                                            className="bg-white text-gray-600 border border-gray-500 px-4 py-2 text-sm rounded-lg hover:bg-gray-600 hover:text-white transition flex items-center justify-center gap-x-2"
                                                         >
-                                                            <LucideX size={16} /> ยกเลิก
+                                                            ยกเลิก
                                                         </button>
                                                     </div>
                                                 ) : (
                                                     <div className="flex space-x-1 justify-center">
                                                         <button
                                                             onClick={() => navigate(`/courseinfo/${plan.planid}`)}
-                                                            className="bg-yellow-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-yellow-600 transition flex items-center gap-x-2"
+                                                            className="bg-white text-yellow-500 border border-yellow-500 px-4 py-2 text-sm rounded-lg hover:bg-yellow-500 hover:text-white transition flex items-center gap-x-2"
                                                         >
                                                             <LucideEye size={16} /> ดูข้อมูลรายวิชา
                                                         </button>
                                                         <button
                                                             type="button"
                                                             onClick={() => handleEditClick(plan)}
-                                                            className="bg-blue-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-blue-600 transition flex items-center gap-x-2"
+                                                            className="bg-white text-blue-600 border border-blue-600 px-4 py-2 text-sm rounded-lg hover:bg-blue-600 hover:text-white transition flex items-center gap-x-2"
                                                         >
                                                             <LucideEdit size={16} /> แก้ไข
                                                         </button>
                                                         <button
                                                             type="button"
                                                             onClick={() => handleDelete(plan.planid)}
-                                                            className="bg-red-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-red-600 transition flex items-center gap-x-2"
+                                                            className="bg-white text-red-600 border border-red-600 px-4 py-2 text-sm rounded-lg hover:bg-red-600 hover:text-white transition flex items-center gap-x-2"
                                                         >
                                                             <LucideTrash size={16} /> ลบ
                                                         </button>
