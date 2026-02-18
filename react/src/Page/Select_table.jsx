@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import Sidebar from "../components/Sidebar";
-import { ArrowLeft } from "lucide-react";
+import Sidebar from "../components/sidebar";
+import { useNavigate, useLocation } from "react-router-dom"; // ✅ เพิ่ม useParams และ useLocation
+import { Trash2, ArrowLeft } from "lucide-react";
+import Swal from "sweetalert2";
 
-const StudyPlans = () => {
-    const [plans, setPlans] = useState([]);
+function Select_table() {
+  const [plans, setPlans] = useState([]);
     const navigate = useNavigate();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
@@ -86,14 +87,14 @@ const StudyPlans = () => {
                 {/* ปุ่มย้อนกลับ */}
                 <button
                     onClick={handleBack}
-                    className="mb-6 flex items-center gap-2 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 
+                    className="mb-6 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white 
                     rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                 >
                     <ArrowLeft size={20} />
                     <span className="font-medium">ย้อนกลับ</span>
                 </button>
 
-                <h2 className="text-center text-3xl font-bold mb-6">ตารางเรียนย้อนหลัง</h2>
+                <h2 className="text-center text-3xl font-bold mb-6">สร้างตารางเรียน</h2>
 
               {plans.length === 0 ? (
                 <div className="text-center text-gray-600 mt-10">
@@ -111,7 +112,7 @@ const StudyPlans = () => {
                                         <div
                                             key={plan.infoid}
                                             className="bg-white shadow-md rounded-xl p-4 mb-4 hover:bg-blue-100 transition cursor-pointer"
-                                            onClick={() => navigate(`/HistoryTable/${plan.planid}`, { state: plan })}
+                                            onClick={() => navigate(`/Create_Study_Table/${plan.infoid}`, { state: plan })}
                                         >
                                             <p className="text-blue-600 font-medium">
                                                 {plan.summer ? "ภาคฤดูร้อน" : `ภาคเรียนปกติ ${plan.term} เทอม`}
@@ -130,6 +131,6 @@ const StudyPlans = () => {
             </div>
         </div>
     );
-};
+}
 
-export default StudyPlans;
+export default Select_table

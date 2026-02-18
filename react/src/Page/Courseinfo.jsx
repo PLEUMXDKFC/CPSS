@@ -179,7 +179,7 @@ function Courseinfo() {
       <Sidebar />
       <div className="ml-65 container mx-auto p-4">
         <div className="flex justify-between items-center mb-6">
-          <button onClick={handleBack} className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
+          <button onClick={handleBack} className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
             <ArrowLeft size={20} />
             <span className="font-medium">ย้อนกลับ</span>
           </button>
@@ -187,7 +187,7 @@ function Courseinfo() {
             course === previousCourse && (
               <button
                 onClick={() => setShowConfirm(true)}
-                className="flex items-center gap-2 px-4 py-2 text-white bg-green-600 hover:bg-green-700 text-lg rounded-md"
+                className="flex items-center gap-2 px-4 py-2 bg-white text-green-600 border border-green-600 hover:bg-green-600 hover:text-white text-lg rounded-md"
               >
                 <ArrowUp size={20} />
                 ใช้ข้อมูลจากปีที่แล้ว
@@ -204,10 +204,10 @@ function Courseinfo() {
                 คุณต้องการดึงข้อมูลรายวิชาจาก {course} รหัส {previousStudentId} (ปีนี้รหัส {studentId}) หรือไม่?
               </p>
               <div className="flex justify-between">
-                <button onClick={handleAddPreviousCourse} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <button onClick={handleAddPreviousCourse} className="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white">
                   ตรวจสอบและเลือกรายวิชา
                 </button>
-                <button onClick={() => setShowConfirm(false)} className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                <button onClick={() => setShowConfirm(false)} className="px-4 py-2 bg-white text-gray-600 border border-gray-500 rounded-md hover:bg-gray-600 hover:text-white">
                   ยกเลิก
                 </button>
               </div>
@@ -271,13 +271,13 @@ function Courseinfo() {
                 </div>
                 <button
                   onClick={() => setShowSelectionModal(false)}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                  className="px-4 py-2 bg-white text-gray-600 border border-gray-500 rounded-md hover:bg-gray-600 hover:text-white"
                 >
                   ยกเลิก
                 </button>
                 <button
                   onClick={handleSaveSelectedSubjects}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                  className="px-4 py-2 bg-white text-green-600 border border-green-600 rounded-md hover:bg-green-600 hover:text-white"
                 >
                   บันทึกข้อมูล ({selectedSubjects.length})
                 </button>

@@ -1,26 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft, Printer } from "lucide-react";
+import axios from "axios";
 import Sidebar from "../components/Sidebar";
 
 const BASE_URL = "http://localhost/cpss/server/api/GET";
 
 const api = {
-    getSchedule: async ({ planid, infoid, term, year }) => {
-        if (!planid) throw new Error("กรุณาระบุ planid");
-        // if (!infoid) throw new Error("กรุณาระบุ infoid");
-
-        const params = new URLSearchParams({
-            planid: String(planid),
-            infoid: String(infoid),
-            ...(term ? { term: String(term) } : {}),
-            ...(year ? { year: String(year) } : {}),
-        });
-
-        const res = await fetch(`${BASE_URL}/get_schedule.php?${params}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-    },
+    getSchedule: (params) => axios.get(`${BASE_URL}/get_schedule_by_teacher.php`, { params }).then((res) => res.data),
 };
 
 const DAYS = [
@@ -75,8 +62,9 @@ const groupLabel = (item) => {
 const CombinedCell = ({ item }) => (
     <div className="flex flex-col justify-between px-1.5 pt-1 pb-0.5" style={{ height: ROW_H, overflow: "hidden" }}>
         {/* บรรทัด 1: รหัสวิชา + ชื่อวิชา */}
-        <p className="text-gray-900 leading-tight truncate text-center" style={{ fontSize: 14 }}>
-            <span className="font-extrabold">{item.course_code}</span>
+        <p className="text-gray-900 leading-tight truncate" style={{ fontSize: 14 }}>
+            <span className="font-extrabold">{item.course_code}</span>{" "}
+            <span className="text-gray-700">{item.course_name}</span>
         </p>
 
         {/* บรรทัด 2: กลุ่ม */}
@@ -100,7 +88,8 @@ const SplitHalf = ({ item }) => (
     <div className="px-1.5 py-0.5" style={{ overflow: "hidden" }}>
         {/* รหัสวิชา + ชื่อวิชา */}
         <p className="text-gray-900 leading-tight truncate" style={{ fontSize: 14 }}>
-            <span className="font-extrabold">{item.course_code}</span>
+            <span className="font-extrabold">{item.course_code}</span>{" "}
+            <span className="text-gray-700">{item.course_name}</span>
         </p>
         {/* กลุ่ม + ห้อง + อาจารย์ */}
         <p className="text-gray-600 leading-snug truncate" style={{ fontSize: 14 }}>
@@ -119,60 +108,42 @@ const SplitCell = ({ topItem, bottomItem }) => (
     </div>
 );
 
-const Plans = () => {
-    const { planid } = useParams();
-    const location = useLocation();
+const TeacherSchedule = () => {
+    const { teacher_id } = useParams();
+    const location = useLocation(); // Add this to be sure
     const navigate = useNavigate();
     const printRef = useRef(null);
     
-    // Default values or from navigation state
     // Default values or from navigation state
     const [data, setData]             = useState([]);
     const [loading, setLoading]       = useState(false);
     const [error, setError]           = useState(null);
 
-    const [filterPlan, setFilterPlan] = useState(location.state?.planid || planid || "");
-    const [filterInfo, setFilterInfo] = useState(location.state?.infoid || "");
-    const [filterYear, setFilterYear] = useState(location.state?.year || "");
-    
-    // Toggle Logic State - Initialize directly from location.state to avoid race conditions
-    const [termPair, setTermPair] = useState(() => {
-        if (location.state?.term) {
-            const t = Number(location.state.term);
-            if (t % 2 !== 0) return [t, t + 1];
-            return [t - 1, t];
-        }
-        return [1, 2]; // Default
-    });
+    const [filterTeacher, setFilterTeacher] = useState(location.state?.teacher_id || teacher_id || "");
+    const [filterTerm, setFilterTerm] = useState(location.state?.term || "1");
+    const [filterYear, setFilterYear] = useState(location.state?.year || "2568");
+    const [filterPlanId, setFilterPlanId] = useState(location.state?.planid || "");
+    const [filterInfoId, setFilterInfoId] = useState(location.state?.infoid || "");
+    const [filterGroupName, setFilterGroupName] = useState(location.state?.group_name || "");
 
-    const [displayTerm, setDisplayTerm] = useState(() => {
-         // Always default to 1 as requested
-         return 1;
-    });
-
-    const [filterTerm, setFilterTerm] = useState(() => {
-        // Always default to 1 as requested (Semester 1)
-        // Even if incoming term is 5 (Year 3 Sem 1), API expects term=1 with year
-        return "1";
-    });
-
-    const [hasInitializedTerm, setHasInitializedTerm] = useState(() => !!location.state?.term);
-
-    // Initialize from location state if available (Only for non-primitive updates if any, but we handled them above)
-    // We can remove the useEffect that handled location.state logic for term/pair
     useEffect(() => {
         if (location.state) {
-            setFilterPlan(location.state.planid);
-            setFilterInfo(location.state.infoid);
+            setFilterTeacher(location.state.teacher_id);
+            setFilterTerm(location.state.term);
             setFilterYear(location.state.year);
-            // Term logic is now handled in useState
+            if (location.state.planid) setFilterPlanId(location.state.planid);
+            if (location.state.infoid) setFilterInfoId(location.state.infoid);
+            if (location.state.group_name) setFilterGroupName(location.state.group_name);
+        } else if (teacher_id) {
+             setFilterTeacher(teacher_id);
         }
-    }, [location.state]);
+    }, [location.state, teacher_id]);
 
     const handleBack = () => {
         navigate(-1);
     };
 
+    // ✅ ฟังก์ชันพิมพ์เฉพาะส่วนของตารางสอน (อ้างอิงจาก printplan)
     const handlePrint = () => {
         const originalContent = document.body.innerHTML;
         const printContent = printRef.current.innerHTML;
@@ -202,25 +173,14 @@ const Plans = () => {
         window.location.reload();
     };
 
-    const handleToggleTerm = (num) => {
-        setDisplayTerm(num);
-        // num is 1 or 2
-        // We always want to filter by term 1 or 2 for the API
-        setFilterTerm(String(num));
-    };
-
-    const targetPlanId = Number(filterPlan);
-    const targetInfoId = Number(filterInfo);
-    const classInfo    = data.length > 0 ? data[0] : null;
+    const targetTeacherId = Number(filterTeacher);
+    const teacherInfo    = data.length > 0 ? data[0] : null;
 
     const fetchData = useCallback(async () => {
-        const planIdNum = Number(filterPlan);
-        const infoIdNum = Number(filterInfo);
+        const teacherIdNum = Number(filterTeacher);
 
-        console.log("DEBUG fetchData:", { filterPlan, filterInfo, planIdNum, infoIdNum, filterTerm, filterYear });
-
-        if (!planIdNum) {
-            setError("กรุณาระบุ planid ให้ครบถ้วน");
+        if (!teacherIdNum) {
+            setError("กรุณาระบุ teacher_id");
             return;
         }
 
@@ -228,10 +188,12 @@ const Plans = () => {
         setError(null);
         try {
             const rows = await api.getSchedule({
-                planid: planIdNum,
-                infoid: infoIdNum,
-                term:   filterTerm, // This might be empty initially
+                teacher_id: teacherIdNum,
+                term:   filterTerm,
                 year:   filterYear,
+                ...(filterPlanId ? { planid: Number(filterPlanId) } : {}),
+                ...(filterInfoId ? { infoid: Number(filterInfoId) } : {}),
+                ...(filterGroupName ? { group_name: filterGroupName } : {}),
             });
 
             const normalized = (Array.isArray(rows) ? rows : []).map((r) => ({
@@ -242,46 +204,14 @@ const Plans = () => {
                 courseid:            Number(r.courseid),
                 planid:              Number(r.planid),
                 infoid:              Number(r.infoid),
+                teacher_id:          Number(r.teacher_id),
+                room_id:             Number(r.room_id),
                 split_status:        Number(r.split_status),
                 table_split_status:  r.table_split_status ?? "false",
             }));
 
-            // Auto-detect if not initialized
-            let firstRow = normalized[0];
-            if (firstRow) {
-                if (!filterInfo) {
-                    setFilterInfo(String(firstRow.infoid));
-                }
-                if (!filterYear) setFilterYear(String(firstRow.class_year));
-                
-                // If filterTerm was empty, we detect it now
-                if (!filterTerm && !hasInitializedTerm) {
-                    const t = Number(firstRow.term);
-                    if (t % 2 !== 0) {
-                        setTermPair([t, t + 1]);
-                        setDisplayTerm(1);
-                        setFilterTerm("1"); // Map odd to 1
-                    } else {
-                        setTermPair([t - 1, t]);
-                        setDisplayTerm(1); // Force to 1
-                        setFilterTerm("1"); // Map even -> odd -> 1
-                    }
-                    setHasInitializedTerm(true);
-                    // Note: Setting state here will trigger re-fetch in next render loop
-                }
-            }
-
-            const currentInfoId = filterInfo ? Number(filterInfo) : (firstRow?.infoid);
-            
-            // Filter strictly by the current term we decided on
-            // If filterTerm is empty (first load), we might show everything or wait for state update
-            // Ideally we wait. But if we show everything it might be confusing.
-            // Let's rely on re-render when filterTerm updates.
-            
             const filtered = normalized.filter(
-                (r) => r.planid === planIdNum 
-                    && (currentInfoId ? r.infoid === Number(currentInfoId) : true)
-                    && (filterTerm ? r.term == filterTerm : true) 
+                (r) => r.teacher_id == teacherIdNum
             );
 
             setData(filtered);
@@ -291,14 +221,13 @@ const Plans = () => {
         } finally {
             setLoading(false);
         }
-    }, [filterPlan, filterInfo, filterTerm, filterYear, hasInitializedTerm]);
+    }, [filterTeacher, filterTerm, filterYear, filterPlanId, filterInfoId, filterGroupName]);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
+    useEffect(() => { fetchData(); }, []); // eslint-disable-line
 
     // ── render แต่ละแถววัน ────────────────────────────────────────────────
     const renderRow = (dayKey, dayLabel) => {
         const covered = new Set();
-        const deferredSplit = new Map(); // เก็บ split items สำหรับคาบถัดไป
 
         return (
             <tr key={dayKey} style={{ height: ROW_H }}>
@@ -371,28 +300,13 @@ const Plans = () => {
 
                     if (covered.has(p.period)) return null;
 
-                    // ── ตรวจสอบ deferred split (คาบที่ 2+ ของ split) ──
-                    if (deferredSplit.has(p.period)) {
-                        const { topItem: dTop, bottomItem: dBot, span: dSpan } = deferredSplit.get(p.period);
-                        return (
-                            <td
-                                key={idx}
-                                colSpan={dSpan}
-                                className="border border-gray-400 align-top bg-white p-0"
-                                style={{ minWidth: 70, height: ROW_H, overflow: "hidden" }}
-                            >
-                                <SplitCell topItem={dTop} bottomItem={dBot} />
-                            </td>
-                        );
-                    }
-
                     // ── ล็อกคาบครูที่ปรึกษา: วันพุธ คาบ 5 ──
                     if (dayKey === "wednesday" && p.period === 5) {
                         return (
                             <td
                                 key={idx}
                                 className="border border-gray-400 bg-white align-middle text-center"
-                                style={{ minWidth: 70, height: ROW_H }}
+                                style={{ minWidth: 90, height: ROW_H }}
                             >
                                 <span className="text-gray-700 font-bold" style={{ fontSize: 16 }}>
                                     พบครูที่ปรึกษา
@@ -405,16 +319,16 @@ const Plans = () => {
                     const items = data
                         .filter(
                             (s) =>
-                                s.planid     === targetPlanId &&
-                                s.infoid     === targetInfoId &&
+                                s.teacher_id === targetTeacherId &&
                                 s.date       === dayKey &&
-                                s.start_time === p.period
+                                s.start_time <= p.period &&
+                                s.end_time   >  p.period
                         )
                         .sort((a, b) => a.split_status - b.split_status); // 1=top, 2=bottom
 
                     if (items.length > 0) {
                         const mainItem = items[0];
-                        const totalSpan = mainItem.end_time - mainItem.start_time + 1;
+                        const span = mainItem.end_time - mainItem.start_time + 1;
 
                         // ตรวจสอบว่าเป็น split cell หรือไม่
                         const isSplit = items.some(i => i.table_split_status === "true");
@@ -424,34 +338,17 @@ const Plans = () => {
                             const bottomItem = items.find(i => i.split_status === 2);
 
                             if (topItem && bottomItem) {
-                                // สร้างกลุ่มรวม เช่น "1-2"
-                                const combinedGroup = `${topItem.group_name}-${bottomItem.group_name}`;
-                                // สร้าง item สำหรับคาบแรก (แสดงแบบ CombinedCell)
-                                const firstCellItem = { ...topItem, group_name: combinedGroup };
-
-                                if (totalSpan > 1) {
-                                    // คาบแรก: แสดงเดี่ยว (colSpan=1)
-                                    // คาบที่เหลือ: แสดง SplitCell
-                                    const remainingSpan = totalSpan - 1;
-                                    deferredSplit.set(mainItem.start_time + 1, {
-                                        topItem,
-                                        bottomItem,
-                                        span: remainingSpan,
-                                    });
-                                    // cover คาบที่ 3+ (คาบที่ 2 จะถูก deferred)
-                                    for (let pp = mainItem.start_time + 2; pp <= mainItem.end_time; pp++)
-                                        covered.add(pp);
-                                }
-                                // else: totalSpan === 1 → คาบเดียว แสดงแบบ CombinedCell
-
+                                // ทั้งคู่อยู่ในช่องเดียวกัน → แสดง 2 ชั้นพร้อม arrow คั่น
+                                for (let pp = mainItem.start_time + 1; pp <= mainItem.end_time; pp++)
+                                    covered.add(pp);
                                 return (
                                     <td
                                         key={idx}
-                                        colSpan={1}
-                                        className="border border-gray-400 align-middle text-center bg-white p-0"
-                                        style={{ minWidth: 70, height: ROW_H, overflow: "hidden" }}
+                                        colSpan={span}
+                                        className="border border-gray-400 align-top bg-white p-0"
+                                        style={{ minWidth: 90, height: ROW_H, overflow: "hidden" }}
                                     >
-                                        <CombinedCell item={firstCellItem} />
+                                        <SplitCell topItem={topItem} bottomItem={bottomItem} />
                                     </td>
                                 );
                             }
@@ -462,7 +359,7 @@ const Plans = () => {
                                     <td
                                         key={idx}
                                         className="border border-gray-400 align-top bg-white p-0"
-                                        style={{ minWidth: 70, height: ROW_H, overflow: "hidden" }}
+                                        style={{ minWidth: 90, height: ROW_H, overflow: "hidden" }}
                                     >
                                         <CombinedCell item={topItem} />
                                     </td>
@@ -476,9 +373,9 @@ const Plans = () => {
                         return (
                             <td
                                 key={idx}
-                                colSpan={totalSpan}
+                                colSpan={span}
                                 className="border border-gray-400 align-top bg-white p-0"
-                                style={{ minWidth: 70, height: ROW_H, overflow: "hidden" }}
+                                style={{ minWidth: 90, height: ROW_H, overflow: "hidden" }}
                             >
                                 <CombinedCell item={mainItem} />
                             </td>
@@ -490,7 +387,7 @@ const Plans = () => {
                         <td
                             key={idx}
                             className="border border-gray-400 bg-white"
-                            style={{ minWidth: 70, height: ROW_H }}
+                            style={{ minWidth: 90, height: ROW_H }}
                         />
                     );
                 })}
@@ -503,47 +400,18 @@ const Plans = () => {
             <Sidebar />
             <div className="ml-64 flex-1 p-6 space-y-4">
 
+                {/* ── ปุ่มย้อนกลับ + พิมพ์ ── */}
                 <div className="flex items-center justify-between">
-                    {/* Left side actions */}
-                    <div className="flex gap-4">
-                        <button
-                            onClick={handleBack}
-                            className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
-                        >
-                            <ArrowLeft size={20} />
-                            <span className="font-medium">ย้อนกลับ</span>
-                        </button>
-                        
-                        {/* Term Toggles */}
-                        <div className="flex rounded-md shadow-sm" role="group">
-                             <button
-                                type="button"
-                                onClick={() => handleToggleTerm(1)}
-                                className={`px-4 py-2 text-sm font-medium border border-blue-600 rounded-l-lg focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 transition-all duration-200
-                                    ${displayTerm === 1 
-                                        ? "bg-blue-600 text-white hover:bg-blue-700" 
-                                        : "bg-white text-blue-600 hover:bg-blue-600 hover:text-white"
-                                    }`}
-                            >
-                                ภาคเรียนที่ 1
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleToggleTerm(2)}
-                                className={`px-4 py-2 text-sm font-medium border border-blue-600 rounded-r-lg focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 transition-all duration-200
-                                    ${displayTerm === 2 
-                                        ? "bg-blue-600 text-white hover:bg-blue-700" 
-                                        : "bg-white text-blue-600 hover:bg-blue-600 hover:text-white"
-                                    }`}
-                            >
-                                ภาคเรียนที่ 2
-                            </button>
-                        </div>
-                    </div>
-
+                    <button
+                        onClick={handleBack}
+                        className="mb-6 flex items-center gap-2 px-4 py-2 bg-white border border-gray-500 text-gray-600 hover:bg-gray-600 hover:text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
+                    >
+                        <ArrowLeft size={20} />
+                        <span className="font-medium">ย้อนกลับ</span>
+                    </button>
                     <button
                         onClick={handlePrint}
-                        className="flex items-center gap-2 px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
+                        className="mb-6 flex items-center gap-2 px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                     >
                         <Printer size={20} />
                         <span className="font-medium">พิมพ์ตาราง</span>
@@ -553,8 +421,7 @@ const Plans = () => {
                 {/* badge สรุป */}
                 {!loading && data.length > 0 && (
                     <p className="text-lg text-gray-600 px-1 font-semibold">
-                        แสดงข้อมูลสำหรับ planid = <strong className="text-gray-800">{targetPlanId}</strong>
-                        {" "}/ infoid = <strong className="text-gray-800">{targetInfoId}</strong>
+                        ตารางสอนอาจารย์: <strong className="text-gray-800">{teacherInfo?.teacher_name || targetTeacherId}</strong>
                         {" "}({data.length} คาบ)
                     </p>
                 )}
@@ -579,14 +446,11 @@ const Plans = () => {
                         </div>
                         <p className="text-xl font-bold">วิทยาลัยเทคนิคแพร่</p>
                         <p className="text-base mt-1">
-                            ตารางสอนชั้นเรียน&nbsp;
-                            ระดับชั้น......{classInfo?.sublevel ?? ""}............
+                            ตารางสอนครู.....{teacherInfo?.teacher_name || ""}.......
                             แผนกวิชา......ช่างเทคนิคคอมพิวเตอร์.......
-                            กลุ่ม......{classInfo?.class_group ?? ""}......
-                            จำนวนนักเรียน.............คน
                         </p>
                         <p className="text-base mt-0.5">
-                            ภาคเรียนที่..........{displayTerm}...............&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            ภาคเรียนที่..........{filterTerm}...............&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                             ปีการศึกษา..........{filterYear}...............
                         </p>
                     </div>
@@ -617,12 +481,10 @@ const Plans = () => {
                                         {PERIODS.map((p, i) => (
                                             <th
                                                 key={i}
-                                                colSpan={1}
-                                                rowSpan={p.isSpecial ? 2 : 1}
                                                 className={`border border-gray-400 p-1 text-center font-normal whitespace-pre-line ${p.isSpecial ? "bg-gray-100" : ""}`}
                                                 style={{
-                                                    width: p.isSpecial ? 50 : 70,
-                                                    minWidth: p.isSpecial ? 50 : 70,
+                                                    width: p.isSpecial ? 50 : 90,
+                                                    minWidth: p.isSpecial ? 50 : 90,
                                                     fontSize: 18,
                                                     lineHeight: 1.5,
                                                 }}
@@ -640,18 +502,15 @@ const Plans = () => {
                                         >
                                             วัน / คาบ
                                         </th>
-                                        {PERIODS.map((p, i) => {
-                                            if (p.isSpecial) return null;
-                                            return (
-                                                <th
-                                                    key={i}
-                                                    className={`border border-gray-400 p-1 text-center font-semibold ${p.isSpecial ? "bg-gray-100" : ""}`}
-                                                    style={{ fontSize: 18 }}
-                                                >
-                                                    {p.sub}
-                                                </th>
-                                            );
-                                        })}
+                                        {PERIODS.map((p, i) => (
+                                            <th
+                                                key={i}
+                                                className={`border border-gray-400 p-1 text-center font-semibold ${p.isSpecial ? "bg-gray-100" : ""}`}
+                                                style={{ fontSize: 18 }}
+                                            >
+                                                {p.sub}
+                                            </th>
+                                        ))}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -667,4 +526,4 @@ const Plans = () => {
     );
 };
 
-export default Plans;
+export default TeacherSchedule;

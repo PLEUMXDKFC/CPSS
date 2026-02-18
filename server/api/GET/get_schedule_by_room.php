@@ -1,52 +1,48 @@
 <?php
-// server/api/GET/get_schedule.php
-// GET /api/GET/get_schedule.php?planid=27&infoid=98&term=1&year=2568
+// server/api/GET/get_schedule_by_room.php
+// GET /api/GET/get_schedule_by_room.php?room_id=3&term=1&year=2568
 
 require_once dirname(__FILE__) . '/../conn.php';
 
 try {
-    $planid = isset($_GET['planid']) ? $_GET['planid'] : '';
-    $infoid = isset($_GET['infoid']) ? $_GET['infoid'] : '';
-    $term   = isset($_GET['term'])   ? $_GET['term']   : '';
-    $year   = isset($_GET['year'])   ? $_GET['year']   : '';
+    $room_id = isset($_GET['room_id']) ? $_GET['room_id'] : '';
+    $term    = isset($_GET['term'])    ? $_GET['term']    : '';
+    $year    = isset($_GET['year'])    ? $_GET['year']    : '';
+    $planid  = isset($_GET['planid'])  ? $_GET['planid']  : '';
+    $infoid  = isset($_GET['infoid'])  ? $_GET['infoid']  : '';
+    $group_name = isset($_GET['group_name']) ? $_GET['group_name'] : '';
 
-    if (empty($planid)) {
+    if (empty($room_id)) {
         http_response_code(400);
-        echo json_encode(['status' => 'error', 'message' => 'planid is required']);
+        echo json_encode(['status' => 'error', 'message' => 'room_id is required']);
         exit;
     }
-    // if (empty($infoid)) {
-    //     http_response_code(400);
-    //     echo json_encode(['status' => 'error', 'message' => 'infoid is required']);
-    //     exit;
-    // }
-
-    // Debug log
-    error_log("DEBUG get_schedule.php: planid=$planid, infoid=$infoid, term=$term, year=$year");
 
     $conditions = [];
     $params     = [];
 
-    // ── planid — กรองจาก create_study_table ───────────────────────────────
-    $conditions[] = "cst.planid = :planid";
-    $params[':planid'] = (int) $planid;
+    $conditions[] = "cst.room_id = :room_id";
+    $params[':room_id'] = (int) $room_id;
 
-    // ── infoid — กรองจาก course_information (ระบุกลุ่มเรียน) ───────────────
-    if (!empty($infoid)) {
-        $conditions[] = "ci.infoid = :infoid";
-        $params[':infoid'] = (int) $infoid;
-    }
-
-    // ── term — กรองจาก course_information (ภาคเรียน) ──────────────────────
     if (!empty($term)) {
         $conditions[] = "ci.term = :term";
         $params[':term'] = $term;
     }
-
-    // ── year ──────────────────────────────────────────────────────────────
     if (!empty($year)) {
         $conditions[] = "ci.year = :year";
         $params[':year'] = $year;
+    }
+    if (!empty($planid)) {
+        $conditions[] = "cst.planid = :planid";
+        $params[':planid'] = (int) $planid;
+    }
+    if (!empty($infoid)) {
+        $conditions[] = "ci.infoid = :infoid";
+        $params[':infoid'] = (int) $infoid;
+    }
+    if (!empty($group_name)) {
+        $conditions[] = "cst.group_name = :group_name";
+        $params[':group_name'] = $group_name;
     }
 
     $where = "WHERE " . implode(" AND ", $conditions);
@@ -85,17 +81,15 @@ try {
         LEFT  JOIN subject            AS s   ON s.subject_id = ci.subject_id
         LEFT  JOIN room               AS r   ON r.room_id   = cst.room_id
         $where
-        ORDER BY cst.split_status ASC, LOWER(cst.date) DESC, cst.start_time ASC
+        ORDER BY
+            FIELD(LOWER(cst.date), 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'),
+            cst.start_time ASC,
+            cst.split_status ASC
     ";
-
-    // Debug SQL
-    error_log("DEBUG SQL: $sql");
-    error_log("DEBUG Params: " . print_r($params, true));
 
     $stmt = $conn->prepare($sql);
     $stmt->execute($params);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    error_log("DEBUG Result count: " . count($rows));
 
     $result = array_map(function ($row) {
         $row['field_id']     = (int) $row['field_id'];

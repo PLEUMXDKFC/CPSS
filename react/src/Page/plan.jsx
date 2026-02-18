@@ -112,7 +112,7 @@ const Plans = () => {
                 {/* ปุ่มย้อนกลับ */}
                 <button 
                     onClick={handleBack} 
-                    className="mb-6 flex items-center gap-2 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 
+                    className="mb-6 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white 
                     rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                 >
                     <ArrowLeft size={20} />
@@ -147,7 +147,7 @@ const Plans = () => {
                                                             </p>
                                                             <button
                                                                 onClick={() => handleAddSubject(plan.infoid, plan.planid, "summer", plan.summer)}
-                                                                className="flex items-center gap-6 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
+                                                                className="flex items-center gap-6 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                                                             >
                                                                 <span className="font-medium">+ เพิ่มรายวิชาภาคเรียนฤดูร้อน</span>
                                                             </button>
@@ -172,7 +172,7 @@ const Plans = () => {
                                                                             <td className="border border-gray-300 p-2 w-[100px] text-center">
                                                                                 <button
                                                                                     onClick={() => handleDeleteSubject(subject.courseid, plan.infoid, "summer")}
-                                                                                    className="bg-red-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-red-600 cursor-pointer transition duration-300 ease-in-out justify-center"
+                                                                                    className="bg-white text-red-600 border border-red-600 px-4 py-2 text-sm rounded-lg hover:bg-red-600 hover:text-white cursor-pointer transition duration-300 ease-in-out justify-center"
                                                                                 >
                                                                                     <Trash2 size={16}/>
                                                                                 </button>
@@ -209,7 +209,7 @@ const Plans = () => {
                                                             <button
                                                                 key={`${plan.infoid}-term-${term}`}
                                                                 onClick={() => handleAddSubject(plan.infoid, plan.planid, term, plan.year,plan.sublevel)}
-                                                                className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
+                                                                className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
                                                             >
                                                                 <span className="font-medium">+ ภาคเรียนที่ {term}</span>
                                                             </button>
@@ -241,7 +241,7 @@ const Plans = () => {
                                                                             <td className="border border-gray-300 p-2 w-[100px] text-center">
                                                                                 <button
                                                                                     onClick={() => handleDeleteSubject(subject.courseid, plan.infoid, term)}
-                                                                                    className="bg-red-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-red-600 cursor-pointer transition duration-300 ease-in-out justify-center"
+                                                                                    className="bg-white text-red-600 border border-red-600 px-4 py-2 text-sm rounded-lg hover:bg-red-600 hover:text-white cursor-pointer transition duration-300 ease-in-out justify-center"
                                                                                 >
                                                                                     <Trash2 size={16} />
                                                                                 </button>

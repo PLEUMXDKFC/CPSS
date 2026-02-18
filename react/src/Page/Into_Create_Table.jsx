@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "../components/Sidebar";
 
-const MakePlan = () => {
+
+
+function Into_Create_Table() {
   const [plans, setPlans] = useState([]);
   const [filteredPlans, setFilteredPlans] = useState([]);
   const [selectedCode, setSelectedCode] = useState(""); // รหัสที่เลือก
@@ -59,7 +61,7 @@ const MakePlan = () => {
     <div className="flex min-h-screen">
       <Sidebar />
       <div className="ml-65 container mx-auto p-6">
-        <h2 className="text-center text-3xl font-bold mb-6">ตารางเรียนย้อนหลัง</h2>
+        <h2 className="text-center text-3xl font-bold mb-6">สร้างตารางเรียน</h2>
 
         {/* ---------- ส่วน select กรองรหัส ---------- */}
         <div className="mb-6 text-center">
@@ -97,14 +99,14 @@ const MakePlan = () => {
                 className="bg-white shadow-lg p-6 rounded-xl cursor-pointer hover:bg-blue-200 transition-all"
                 onClick={() =>
                   navigate(
-                    `/IntoStudyHistoryTable?planid=${plan.planid}&course=${encodeURIComponent(
+                    `/Select_table?planid=${plan.planid}&course=${encodeURIComponent(
                       plan.course
                     )}&year=${plan.year}&student_id=${plan.student_id}`
                   )
                 }
               >
                 <h3 className="text-xl font-semibold text-blue-600 mb-2">
-                  ตารางเรียน รหัส: {plan.student_id}
+                  แผนการเรียน รหัส: {plan.student_id}
                 </h3>
                 <p className="text-gray-700">พุทธศักราช: {plan.year}</p>
               </div>
@@ -114,6 +116,6 @@ const MakePlan = () => {
       </div>
     </div>
   );
-};
+}
 
-export default MakePlan;
+export default Into_Create_Table

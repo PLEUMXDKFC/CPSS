@@ -1,6 +1,6 @@
 // src/Page/Studentroomadd.jsx
 import React, { useState, useEffect } from "react";
-import { School, RefreshCw, HelpCircle } from "lucide-react";
+import { School, RefreshCw, HelpCircle, Edit, Trash2 } from "lucide-react";
 import Sidebar from "../components/Sidebar.jsx";
 import axios from "axios";
 
@@ -225,7 +225,7 @@ function Studentroomadd() {
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition"
+                    className="px-4 py-2 bg-white border border-gray-500 text-gray-600 rounded-md hover:bg-gray-600 hover:text-white transition"
                   >
                     ยกเลิกการแก้ไข
                   </button>
@@ -233,7 +233,7 @@ function Studentroomadd() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 disabled:bg-gray-400"
+                  className="px-6 py-2 bg-white border border-blue-600 text-blue-600 font-semibold rounded-md shadow-sm hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 disabled:bg-gray-200 disabled:border-gray-200 disabled:text-gray-400"
                 >
                   {isLoading
                     ? "กำลังบันทึก..."
@@ -305,14 +305,16 @@ function Studentroomadd() {
                           <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() => handleEditClick(r)}
-                              className="px-3 py-1 text-xs border border-blue-500 text-blue-600 rounded-md hover:bg-blue-50 transition-colors"
+                              className="px-3 py-1 text-xs border border-blue-500 text-blue-600 rounded-md bg-white hover:bg-blue-600 hover:text-white transition-colors flex items-center gap-1"
                             >
+                              <Edit size={14} />
                               แก้ไข
                             </button>
                             <button
                               onClick={() => handleDeleteClick(r)}
-                              className="px-3 py-1 text-xs border border-red-500 text-red-600 rounded-md hover:bg-red-50 transition-colors"
+                              className="px-3 py-1 text-xs border border-red-500 text-red-600 rounded-md bg-white hover:bg-red-600 hover:text-white transition-colors flex items-center gap-1"
                             >
+                              <Trash2 size={14} />
                               ลบ
                             </button>
                           </div>

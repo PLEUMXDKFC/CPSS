@@ -26,7 +26,7 @@ function Sidebar() {
       "/makeplan", "/intoplan", "/plan", "/add-subject",
       "/intocheckplan", "/checkplan"
     ];
-    const tablePaths = ["/Into_list_of_subject","/List_of_subject","/In_list_of_subject","/Teacheradd","/Studentroomadd"];
+    const tablePaths = ["/Into_list_of_subject","/List_of_subject","/In_list_of_subject","/Teacheradd","/Studentroomadd","/Into_Create_Table", "/Select_table", "/Create_Study_Table", "/IntoTeacherSchedule", "/TeacherSchedule", "/IntoRoomSchedule", "/RoomSchedule", "/Studyhistorytable", "/IntoStudyHistoryTable", "/HistoryTable"];
     const reportPaths = ["/intoprintplan", "/PrintPlan20"];
     
     // เช็คว่า path ปัจจุบันตรงกับ section ไหน
@@ -250,15 +250,60 @@ function Sidebar() {
                 </li>
                 <li>
                   <Link
-                    to="/StudyHistoryTable"
+                    to="/Into_Create_Table"
                     className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
-                      location.pathname.includes("/StudyHistoryTable")
+                      location.pathname.includes("/Into_Create_Table") ||
+                      location.pathname.includes("/Select_table") ||
+                      location.pathname.includes("/Create_Study_Table")
                         ? "bg-white/20"
                         : ""
                     }`}
                   >
-                    <LucideIcons.Users className="w-5 h-5 mr-2" />
-                    ดูตารางย้อนหลัง
+                    <LucideIcons.Table className="w-5 h-5 mr-2" />
+                    สร้างตารางเรียน
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/IntoTeacherSchedule"
+                    className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                      location.pathname.includes("/IntoTeacherSchedule") ||
+                      location.pathname.includes("/TeacherSchedule")
+                        ? "bg-white/20"
+                        : ""
+                    }`}
+                  >
+                    <LucideIcons.Calendar className="w-5 h-5 mr-2" />
+                    ตารางสอนครู
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/IntoRoomSchedule"
+                    className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                      location.pathname.includes("/IntoRoomSchedule") ||
+                      location.pathname.includes("/RoomSchedule")
+                        ? "bg-white/20"
+                        : ""
+                    }`}
+                  >
+                    <LucideIcons.Monitor className="w-5 h-5 mr-2" />
+                    ตารางการใช้ห้อง
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/Studyhistorytable"
+                    className={`flex items-center p-2 rounded-md hover:bg-white/20 transition ${
+                      location.pathname.includes("/IntoStudyHistoryTable") ||
+                      location.pathname.includes("/Studyhistorytable") ||
+                      location.pathname.includes("/HistoryTable")
+                        ? "bg-white/20"
+                        : ""
+                    }`}
+                  >
+                    <LucideIcons.Clock className="w-5 h-5 mr-2" />
+                    ตารางเรียนย้อนหลัง
                   </Link>
                 </li>
               </motion.ul>

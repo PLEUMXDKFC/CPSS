@@ -25,11 +25,20 @@ import Viewplan from './Page/view-plan';
 import Into_list_of_subject from './Page/Into_list_of_subject';
 import List_of_subject from './Page/List_of_subject';
 import In_list_of_subject from './Page/In_list_of_subject';
+import Into_Create_Table from './Page/Into_Create_Table';
 import Teacheradd from './Page/Teacheradd';
 import Studentroomadd from './Page/Studentroomadd';
-import StudyHistoryTable from './Page/StudyHistoryTable';
+import Create_Study_Table from './Page/Create_Study_Table';
+import Select_table from './Page/Select_table';
+import TeacherSchedule from './Page/TeacherSchedule';
+import RoomSchedule from './Page/RoomSchedule';
+import IntoTeacherSchedule from './Page/IntoTeacherSchedule';
+import IntoRoomSchedule from './Page/IntoRoomSchedule';
 import HistoryTable from './Page/HistoryTable';
 import IntoStudyHistoryTable from './Page/IntoStudyHistoryTable';
+import Studyhistorytable from './Page/Studyhistorytable';
+import TeacherHistoryTable from './Page/TeacherHistoryTable';
+import RoomHistoryTable from './Page/RoomHistoryTable';
 
 function App() {
   return (
@@ -60,11 +69,20 @@ function App() {
       <Route path="/into_list_of_subject" element={<Into_list_of_subject />} />
       <Route path="/List_of_subject?/:planid" element={<List_of_subject />} />
       <Route path="/In_list_of_subject/:infoid" element={<In_list_of_subject />} />
+        <Route path="/TeacherSchedule/:teacher_id" element={<TeacherSchedule />} />
+        <Route path="/RoomSchedule/:room_id" element={<RoomSchedule />} />
+        <Route path="/TeacherHistoryTable/:teacher_id" element={<TeacherHistoryTable />} />
+        <Route path="/RoomHistoryTable/:room_id" element={<RoomHistoryTable />} />
+        <Route path="/IntoTeacherSchedule" element={<IntoTeacherSchedule />} />
+        <Route path="/IntoRoomSchedule" element={<IntoRoomSchedule />} />
+        <Route path="/Studyhistorytable" element={<Studyhistorytable />} />
+        <Route path="/HistoryTable/:planid" element={<HistoryTable />} />
+        <Route path="/IntoStudyHistoryTable" element={<IntoStudyHistoryTable />} />
+      <Route path="/Into_Create_Table" element={<Into_Create_Table />} />
       <Route path="/Teacheradd" element={<Teacheradd />} />
       <Route path="/Studentroomadd" element={<Studentroomadd />} />
-      <Route path="/StudyHistoryTable" element={<StudyHistoryTable />} />
-      <Route path="IntoStudyHistoryTable/HistoryTable/:infoid" element={<HistoryTable />} />
-      <Route path="/IntoStudyHistoryTable" element={<IntoStudyHistoryTable />} />
+      <Route path="/Create_Study_Table/:infoid" element={<Create_Study_Table />} />
+      <Route path="/Select_table" element={<Select_table />} />
     </Routes>
   );
 }
