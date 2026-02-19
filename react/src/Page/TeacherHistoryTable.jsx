@@ -399,6 +399,7 @@ const TeacherHistoryTable = () => {
                                 key={term}
                                 onClick={() => {
                                     setFilterTerm(term);
+                                    setFilterInfoId(""); // Clear specific info filtering when switching terms
                                     console.log("User selected Term:", term);
                                 }}
                                 className={`px-4 py-2 rounded-lg border transition-all ${filterTerm === term ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}

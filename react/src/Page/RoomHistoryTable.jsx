@@ -25,26 +25,26 @@ const api = {
 };
 
 const DAYS = [
-    { key: "monday",    label: "จันทร์"    },
-    { key: "tuesday",   label: "อังคาร"    },
-    { key: "wednesday", label: "พุธ"       },
-    { key: "thursday",  label: "พฤหัสบดี" },
-    { key: "friday",    label: "ศุกร์"    },
+    { key: "monday", label: "จันทร์" },
+    { key: "tuesday", label: "อังคาร" },
+    { key: "wednesday", label: "พุธ" },
+    { key: "thursday", label: "พฤหัสบดี" },
+    { key: "friday", label: "ศุกร์" },
 ];
 
 const PERIODS = [
-    { period: null, label: "07.30\n08.00", sub: "",   isSpecial: true, specialLabel: "กิจกรรมหน้าเสาธงหัวหน้าแผนก" },
-    { period: 1,   label: "08.00\n09.00", sub: "1"  },
-    { period: 2,   label: "09.00\n10.00", sub: "2"  },
-    { period: 3,   label: "10.00\n11.00", sub: "3"  },
-    { period: 4,   label: "11.00\n12.00", sub: "4"  },
-    { period: null, label: "12.00\n13.00", sub: "",   isSpecial: true, specialLabel: "พักรับประทานอาหารกลางวัน" },
-    { period: 5,   label: "13.00\n14.00", sub: "5"  },
-    { period: 6,   label: "14.00\n15.00", sub: "6"  },
-    { period: 7,   label: "15.00\n16.00", sub: "7"  },
-    { period: 8,   label: "16.00\n17.00", sub: "8"  },
-    { period: 9,   label: "17.00\n18.00", sub: "9"  },
-    { period: 10,  label: "18.00\n19.00", sub: "10" },
+    { period: null, label: "07.30\n08.00", sub: "", isSpecial: true, specialLabel: "กิจกรรมหน้าเสาธงหัวหน้าแผนก" },
+    { period: 1, label: "08.00\n09.00", sub: "1" },
+    { period: 2, label: "09.00\n10.00", sub: "2" },
+    { period: 3, label: "10.00\n11.00", sub: "3" },
+    { period: 4, label: "11.00\n12.00", sub: "4" },
+    { period: null, label: "12.00\n13.00", sub: "", isSpecial: true, specialLabel: "พักรับประทานอาหารกลางวัน" },
+    { period: 5, label: "13.00\n14.00", sub: "5" },
+    { period: 6, label: "14.00\n15.00", sub: "6" },
+    { period: 7, label: "15.00\n16.00", sub: "7" },
+    { period: 8, label: "16.00\n17.00", sub: "8" },
+    { period: 9, label: "17.00\n18.00", sub: "9" },
+    { period: 10, label: "18.00\n19.00", sub: "10" },
 ];
 
 const ROW_H = 100; // ความสูงแต่ละแถว px
@@ -123,23 +123,51 @@ const RoomHistoryTable = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const printRef = useRef(null);
-    
-    // Default values or from navigation state
-    const [data, setData]             = useState([]);
-    const [loading, setLoading]       = useState(false);
-    const [error, setError]           = useState(null);
 
-    const [filterRoom, setFilterRoom]       = useState(location.state?.room_id || room_id || "");
-    const [filterTerm, setFilterTerm]       = useState("1");
-    const [filterYear, setFilterYear]       = useState(location.state?.year || "2568");
-    const [filterPlanId, setFilterPlanId]   = useState(location.state?.planid || "");
-    const [filterInfoId, setFilterInfoId]   = useState(location.state?.infoid || "");
+    // Default values or from navigation state
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const [filterRoom, setFilterRoom] = useState(location.state?.room_id || room_id || "");
+
+    const getTermsFromSublevel = (level) => {
+        if (!level) return ["1", "2"];
+        if (level.includes("ปวช.1") || level.includes("ปวส.1")) return ["1", "2"];
+        if (level.includes("ปวช.2") || level.includes("ปวส.2")) return ["3", "4"];
+        if (level.includes("ปวช.3")) return ["5", "6"];
+        return ["1", "2"];
+    };
+
+    let initialTerms = ["1", "2"];
+    if (location.state?.sublevel) {
+        initialTerms = getTermsFromSublevel(location.state.sublevel);
+    }
+
+    const [availableTerms, setAvailableTerms] = useState(initialTerms);
+    const [filterTerm, setFilterTerm] = useState(location.state?.term ? String(location.state.term) : (initialTerms[0] || "1"));
+    const [filterYear, setFilterYear] = useState(location.state?.year || "2568");
+    const [filterPlanId, setFilterPlanId] = useState(location.state?.planid || "");
+    const [filterInfoId, setFilterInfoId] = useState(location.state?.infoid || "");
     const [filterGroupName, setFilterGroupName] = useState(location.state?.group_name || "");
 
     useEffect(() => {
         if (location.state) {
             setFilterRoom(location.state.room_id);
-            // if (location.state.term) setFilterTerm(location.state.term);
+
+            if (location.state.sublevel) {
+                const terms = getTermsFromSublevel(location.state.sublevel);
+                setAvailableTerms(terms);
+                // If term passed in state is valid, use it; otherwise use first available
+                if (location.state.term && terms.includes(String(location.state.term))) {
+                    setFilterTerm(String(location.state.term));
+                } else {
+                    setFilterTerm(terms[0] || "1");
+                }
+            } else if (location.state.term) {
+                setFilterTerm(String(location.state.term));
+            }
+
             if (location.state.year) setFilterYear(location.state.year);
             if (location.state.planid) setFilterPlanId(location.state.planid);
             if (location.state.infoid) setFilterInfoId(location.state.infoid);
@@ -182,7 +210,7 @@ const RoomHistoryTable = () => {
     const currentRoomName = roomInfo?.room_name || stateRoom?.room_name || "";
     const currentRoomType = roomInfo?.room_type || stateRoom?.room_type || "";
 
-    const fetchData = useCallback(async () => {
+    const fetchData = useCallback(async (isBackground = false) => {
         const roomIdNum = Number(filterRoom);
 
         if (!roomIdNum) {
@@ -190,51 +218,59 @@ const RoomHistoryTable = () => {
             return;
         }
 
-        setLoading(true);
+        if (!isBackground) setLoading(true);
         setError(null);
         try {
             console.log("Fetching Room Schedule:", {
-                room_id:    roomIdNum,
-                term:       filterTerm,
-                year:       filterYear,
-                planid:     filterPlanId,
-                infoid:     filterInfoId,
+                room_id: roomIdNum,
+                term: filterTerm,
+                year: filterYear,
+                planid: filterPlanId,
+                infoid: filterInfoId,
                 group_name: filterGroupName,
             });
 
             const rows = await api.getSchedule({
-                room_id:    roomIdNum,
-                term:       filterTerm,
-                year:       filterYear,
-                planid:     filterPlanId,
-                infoid:     filterInfoId,
+                room_id: roomIdNum,
+                term: filterTerm,
+                year: filterYear,
+                planid: filterPlanId,
+                infoid: filterInfoId,
                 group_name: filterGroupName,
             });
-            
+
             console.log("Fetched Rows:", rows);
 
             const normalized = (Array.isArray(rows) ? rows : []).map((r) => ({
                 ...r,
-                date:                (r.date || "").toLowerCase(),
-                start_time:          Number(r.start_time),
-                end_time:            Number(r.end_time),
-                courseid:            Number(r.courseid),
-                planid:              Number(r.planid),
-                infoid:              Number(r.infoid),
-                split_status:        Number(r.split_status),
-                table_split_status:  r.table_split_status ?? "false",
+                date: (r.date || "").toLowerCase(),
+                start_time: Number(r.start_time),
+                end_time: Number(r.end_time),
+                courseid: Number(r.courseid),
+                planid: Number(r.planid),
+                infoid: Number(r.infoid),
+                split_status: Number(r.split_status),
+                table_split_status: r.table_split_status ?? "false",
             }));
 
             setData(normalized);
         } catch (e) {
             setError(e.message);
-            setData([]);
+            if (!isBackground) setData([]);
         } finally {
-            setLoading(false);
+            if (!isBackground) setLoading(false);
         }
     }, [filterRoom, filterTerm, filterYear, filterPlanId, filterInfoId, filterGroupName]);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
+    useEffect(() => {
+        fetchData();
+
+        const interval = setInterval(() => {
+            fetchData(true);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [fetchData]);
 
     // ── render แต่ละแถววัน ────────────────────────────────────────────────
     const renderRow = (dayKey, dayLabel) => {
@@ -356,27 +392,22 @@ const RoomHistoryTable = () => {
                         <ArrowLeft size={20} />
                         <span className="font-medium">ย้อนกลับ</span>
                     </button>
-                    
+
                     <div className="flex items-center gap-2 mb-6">
                         <span className="font-semibold text-gray-700">เลือกเทอม:</span>
-                        <button 
-                            onClick={() => {
-                                setFilterTerm("1");
-                                console.log("User selected Term: 1");
-                            }}
-                            className={`px-4 py-2 rounded-lg border transition-all ${filterTerm === "1" ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}
-                        >
-                            เทอม 1
-                        </button>
-                        <button 
-                            onClick={() => {
-                                setFilterTerm("2");
-                                console.log("User selected Term: 2");
-                            }}
-                            className={`px-4 py-2 rounded-lg border transition-all ${filterTerm === "2" ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}
-                        >
-                            เทอม 2
-                        </button>
+                        {availableTerms.map((term) => (
+                            <button
+                                key={term}
+                                onClick={() => {
+                                    setFilterTerm(term);
+                                    setFilterInfoId(""); // Clear specific info filtering when switching terms
+                                    console.log("User selected Term:", term);
+                                }}
+                                className={`px-4 py-2 rounded-lg border transition-all ${filterTerm === term ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}
+                            >
+                                เทอม {term}
+                            </button>
+                        ))}
                         <span className="ml-2 text-sm font-semibold text-blue-600">
                             (กำลังแสดงผล: {filterTerm === "summer" ? "ฤดูร้อน" : `เทอม ${filterTerm}`})
                         </span>
@@ -391,7 +422,7 @@ const RoomHistoryTable = () => {
                 {!loading && roomInfo && (
                     <p className="text-lg text-gray-600 px-1 font-semibold">
                         แสดงข้อมูลสำหรับ Room ID: <strong className="text-gray-800">{roomInfo.room_id}</strong>
-                         {filterGroupName && <> / Group: <strong className="text-gray-800">{filterGroupName}</strong></>}
+                        {filterGroupName && <> / Group: <strong className="text-gray-800">{filterGroupName}</strong></>}
                     </p>
                 )}
 
@@ -399,7 +430,7 @@ const RoomHistoryTable = () => {
 
                 <div ref={printRef} className="bg-white border border-gray-400 shadow-sm" style={{ fontFamily: "'Sarabun', 'TH Sarabun New', sans-serif" }}>
                     <div className="relative px-6 pt-4 pb-3 text-center border-b border-gray-300">
-                         <div className="absolute top-4 right-4 border border-gray-400 px-3 py-1 text-sm font-medium">
+                        <div className="absolute top-4 right-4 border border-gray-400 px-3 py-1 text-sm font-medium">
                             เอกสารหมายเลข 8 (ห้อง)
                         </div>
                         <p className="text-xl font-bold">วิทยาลัยเทคนิคแพร่</p>
@@ -415,7 +446,7 @@ const RoomHistoryTable = () => {
                     </div>
 
                     {loading ? (
-                         <div className="py-20 text-center text-gray-400 text-base">กำลังโหลด...</div>
+                        <div className="py-20 text-center text-gray-400 text-base">กำลังโหลด...</div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="border-collapse" style={{ width: "100%", minWidth: 1050 }}>

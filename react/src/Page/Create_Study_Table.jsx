@@ -538,7 +538,11 @@ function Create_Study_Table() {
             room_name: schedule.room_name,
             date: schedule.date,
             start_time: schedule.start_time,
-            end_time: schedule.end_time
+            end_time: schedule.end_time,
+            // Added for conflict check
+            planid: schedule.planid,
+            term: schedule.term,
+            group_name: schedule.group_name
         });
     };
 
@@ -547,14 +551,42 @@ function Create_Study_Table() {
         setEditingData({});
     };
 
-    const handleSaveEdit = () => {
+    const handleSaveEdit = async () => {
+        // Validation
+        const start = parseInt(editingData.start_time);
+        const end = parseInt(editingData.end_time);
+
+        if (start >= end) {
+            Swal.fire("ข้อผิดพลาด", "เวลาเริ่มต้องน้อยกว่าเวลาจบ", "warning");
+            return;
+        }
+
+        // Check Conflict
+        const conflictPayload = {
+            teacher_id: editingData.teacher_id,
+            room_id: editingData.room_id || 0,
+            planid: editingData.planid,
+            group_name: editingData.group_name,
+            date: editingData.date,
+            start_time: start,
+            end_time: end,
+            term: editingData.term,
+            exclude_field_id: editingData.field_id // Exclude self
+        };
+
+        const isSafe = await checkConflict(conflictPayload);
+        if (!isSafe) {
+            console.warn("⚠️ Edit Conflict detected");
+            return;
+        }
+
         const payload = {
             field_id: editingData.field_id,
             teacher_id: editingData.teacher_id,
             room_id: editingData.room_id,
             date: editingData.date,
-            start_time: parseInt(editingData.start_time),
-            end_time: parseInt(editingData.end_time)
+            start_time: start,
+            end_time: end
         };
 
         console.log("📤 handleSaveEdit payload:", payload);

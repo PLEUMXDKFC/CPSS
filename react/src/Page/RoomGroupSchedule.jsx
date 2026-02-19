@@ -9,9 +9,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 function RoomGroupSchedule() {
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // Receive room and student_id from previous page
-    const { room, student_id } = location.state || {}; 
+    const { room, student_id } = location.state || {};
 
     const [plans, setPlans] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,7 +22,7 @@ function RoomGroupSchedule() {
         axios.get(`${API_BASE_URL}/server/api/GET/Get_group_information.php`)
             .then((res) => {
                 const data = Array.isArray(res.data) ? res.data : [];
-                
+
                 // Filter by Student ID (Plan)
                 const filtered = data.filter((p) => String(p.student_id) === String(student_id));
 
@@ -71,15 +71,26 @@ function RoomGroupSchedule() {
     };
 
     const handleSelectPlan = (plan) => {
+        let globalTerm = parseInt(plan.term);
+        const level = plan.sublevel;
+
+        // Map Term 1/2 to Global Term 3,4,5,6 based on level
+        if (level.includes("ปวช.2") || level.includes("ปวส.2")) {
+            globalTerm += 2;
+        } else if (level.includes("ปวช.3")) {
+            globalTerm += 4;
+        }
+
         navigate(`/RoomHistoryTable/${room.room_id}`, {
             state: {
                 room: room,
                 room_id: room.room_id,
                 planid: plan.planid,
                 infoid: plan.infoid,
-                term: plan.term,
+                term: globalTerm,
                 year: plan.year,
                 group_name: plan.group_name,
+                sublevel: plan.sublevel,
             },
         });
     };
@@ -97,10 +108,10 @@ function RoomGroupSchedule() {
         <div className="flex min-h-screen bg-gray-50 font-sans">
             <Sidebar />
             <div className="flex-1 p-8 ml-64">
-                
+
                 <button onClick={handleBack} className="mb-6 flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-600 hover:text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
-                                        <ArrowLeft size={20} />
-                                        <span className="font-medium">ย้อนกลับ</span>
+                    <ArrowLeft size={20} />
+                    <span className="font-medium">ย้อนกลับ</span>
                 </button>
 
                 <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">

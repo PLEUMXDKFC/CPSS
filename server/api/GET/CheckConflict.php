@@ -41,6 +41,8 @@ try {
 
     // 2. Check overlap
     // Overlap Condition: (ExistingStart <= NewEnd) AND (ExistingEnd >= NewStart)
+    $exclude_field_id = $_GET['exclude_field_id'] ?? 0;
+
     $sql = "
         SELECT 
             cst.teacher_id, cst.room_id, cst.group_name, cst.planid,
@@ -59,6 +61,7 @@ try {
             AND cst.term = :term
             AND cst.date = :date
             AND (cst.start_time <= :end_time AND cst.end_time >= :start_time)
+            AND cst.field_id != :exclude_field_id
             AND (
                 (cst.teacher_id = :teacher_id) OR
                 (cst.room_id = :room_id AND :room_id_check != 0) OR
@@ -77,6 +80,7 @@ try {
         ':date' => $date,
         ':start_time' => $start_time,
         ':end_time' => $end_time,
+        ':exclude_field_id' => $exclude_field_id,
         ':teacher_id' => $teacher_id,
         ':room_id' => $room_id,
         ':room_id_check' => $room_id,
@@ -93,7 +97,7 @@ try {
         $messages = [];
         foreach ($conflicts as $c) {
             $subjectInfo = ($c['course_code'] ?? '?') . ' ' . ($c['course_name'] ?? '');
-            
+
             if ($c['teacher_id'] == $teacher_id) {
                 $prefix = $c['prefix'] ?? '';
                 $fname = $c['fname'] ?? '';
@@ -105,17 +109,19 @@ try {
                 $rName = $c['room_name'] ?? $c['room_id'];
                 $messages[] = "ห้อง ($rName) ถูกใช้งานสอนวิชา $subjectInfo (กลุ่ม {$c['group_name']})";
             }
-            
+
             // Check Group Conflict
             // Conflict if: Exact match OR (Student ID match AND Group Check match)
-            if ( ($c['planid'] == $planid && $c['group_name'] == $group_name) ||
-                 ($c['student_id'] == $student_id && $c['group_name'] == $group_name) ) {
+            if (
+                ($c['planid'] == $planid && $c['group_name'] == $group_name) ||
+                ($c['student_id'] == $student_id && $c['group_name'] == $group_name)
+            ) {
                 $messages[] = "กลุ่มเรียน ($group_name) มีเรียนวิชา $subjectInfo แล้ว";
             }
         }
-        
+
         $messages = array_unique($messages);
-        
+
         echo json_encode([
             'status' => 'conflict',
             'message' => implode("<br>", $messages),

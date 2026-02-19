@@ -25,8 +25,14 @@ try {
     $params[':room_id'] = (int) $room_id;
 
     if (!empty($term)) {
-        $conditions[] = "ci.term = :term";
-        $params[':term'] = $term;
+        if (strtolower($term) === 'summer') {
+            $conditions[] = "gi.summer IS NOT NULL";
+        } else {
+            $conditions[] = "ci.term = :term";
+            $params[':term'] = $term;
+            // Optionally exclude summer if looking for normal terms
+            $conditions[] = "gi.summer IS NULL";
+        }
     }
     if (!empty($year)) {
         $conditions[] = "ci.year = :year";
